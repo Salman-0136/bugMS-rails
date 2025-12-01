@@ -1,10 +1,11 @@
 default: &default
   adapter: postgresql
   encoding: unicode
+  host: localhost
+  port: 5432   # usually same for 16
+  username: postgres
+  password: 12345678
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV.fetch("PGUSER") { "postgres" } %>
-  password: <%= ENV.fetch("PGPASSWORD") { "12345678" } %>
-  host: <%= ENV.fetch("PGHOST") { "localhost" } %>
 
 development:
   <<: *default
@@ -17,5 +18,3 @@ test:
 production:
   <<: *default
   database: bugMS_production
-  username: <%= ENV["PGUSER"] %>
-  password: <%= ENV["PGPASSWORD"] %>

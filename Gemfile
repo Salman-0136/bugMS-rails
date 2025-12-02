@@ -18,6 +18,8 @@ gem "stimulus-rails"
 gem "jbuilder"
 # Tailwind CSS framework integration for Rails
 gem "tailwindcss-rails"
+# Heroicons integration for Rails
+gem "heroicons-rails"
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 

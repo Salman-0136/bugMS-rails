@@ -4,10 +4,6 @@ class Bug < ApplicationRecord
 
   has_many :comments, dependent: :destroy
 
-  has_many_attached :files
-  has_many_attached :images
-  has_many_attached :videos
-
   enum priority: { low: 0, medium: 1, high: 2 }
   enum status: { open: 0, closed: 1, reopened: 2 }
   enum severity: { minor: 0, major: 1, critical: 2 }

@@ -1,0 +1,32 @@
+<h1 class="text-3xl font-bold mb-6 text-gray-800">My Bugs</h1>
+
+<table class="min-w-full bg-white shadow rounded-xl overflow-hidden">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="px-4 py-3 text-left text-gray-600">Title</th>
+      <th class="px-4 py-3 text-left text-gray-600">Priority</th>
+      <th class="px-4 py-3 text-left text-gray-600">Status</th>
+      <th class="px-4 py-3 text-left text-gray-600">Due Date</th>
+      <th class="px-4 py-3 text-left text-gray-600">Actions</th>
+    </tr>
+  </thead>
+  <tbody class="divide-y divide-gray-200">
+    <% @bugs.each do |bug| %>
+      <tr class="hover:bg-gray-50 transition-colors">
+        <td class="px-4 py-3 font-medium text-gray-800"><%= bug.title %></td>
+        <td class="px-4 py-3 capitalize"><%= bug.priority %></td>
+        <td class="px-4 py-3 capitalize"><%= bug.status %></td>
+        <td class="px-4 py-3"><%= bug.due_date&.strftime("%d %b %Y") %></td>
+        <td class="px-4 py-3 flex gap-2">
+          <%= link_to "View", bug_path(bug), class: "text-blue-600 hover:underline" %>
+          <%= link_to "Edit", edit_bug_path(bug), class: "text-yellow-500 hover:underline" %>
+          <%= link_to "Delete", bug_path(bug), method: :delete, data: { confirm: "Are you sure?" }, class: "text-red-500 hover:underline" %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<div class="mt-6">
+  <%= link_to "Add New Bug", new_bug_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow font-semibold" %>
+</div>

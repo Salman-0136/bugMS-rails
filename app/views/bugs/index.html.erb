@@ -1,0 +1,63 @@
+<div class="w-full px-6 md:px-12 lg:px-20 py-8 bg-gray-50 min-h-screen">
+  <!-- Page Header -->
+  <header class="mb-12 text-center">
+    <h1 class="text-4xl font-extrabold text-gray-800">All Bugs</h1>
+    <p class="text-gray-500 mt-2 text-lg">Track all bugs here. Click on a bug to see details or update its status.</p>
+  </header>
+
+  <!-- Bugs Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <% @bugs.each do |bug| %>
+      <div class="bg-white shadow-md rounded-2xl p-6 hover:shadow-xl transition-all duration-300 border-l-4
+        <%= 'border-red-500' if bug.priority == 'high' %>
+        <%= 'border-yellow-400' if bug.priority == 'medium' %>
+        <%= 'border-green-400' if bug.priority == 'low' %>
+      ">
+        <!-- Title & Priority -->
+        <div class="flex justify-between items-start mb-3">
+          <h2 class="text-xl font-semibold text-gray-800"><%= bug.title %></h2>
+          <span class="px-3 py-1 rounded-full text-xs font-medium
+            <%= 'bg-red-100 text-red-700' if bug.priority == 'high' %>
+            <%= 'bg-yellow-100 text-yellow-800' if bug.priority == 'medium' %>
+            <%= 'bg-green-100 text-green-700' if bug.priority == 'low' %>">
+            <%= bug.priority.capitalize %>
+          </span>
+        </div>
+
+        <!-- Description -->
+        <p class="text-gray-600 mb-4"><%= truncate(bug.description, length: 100) %></p>
+
+        <!-- Status & Due Date -->
+        <div class="flex justify-between items-center text-sm mb-4">
+          <span>
+            Status:
+            <span class="font-semibold
+              <%= 'text-green-600' if bug.status == 'closed' %>
+              <%= 'text-yellow-600' if bug.status == 'in_progress' %>
+              <%= 'text-red-600' if bug.status == 'open' %>">
+              <%= bug.status.humanize %>
+            </span>
+          </span>
+          <span class="text-gray-700 font-medium">Due: <%= bug.due_date&.strftime("%d %b %Y") %></span>
+        </div>
+
+        <!-- Assigned Users -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          <% bug.users.each do |user| %>
+            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium"><%= user.name %></span>
+          <% end %>
+        </div>
+
+        <!-- View Button Only -->
+        <div class="flex justify-end mt-auto">
+          <%= link_to "View", bug_path(bug), class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <!-- Add New Bug Button -->
+  <div class="mt-12 flex justify-center">
+    <%= link_to "Add New Bug", new_bug_path, class: "bg-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-md font-semibold text-lg transition" %>
+  </div>
+</div>

@@ -1,0 +1,43 @@
+<nav class="bg-white shadow-md sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4">
+    <div class="flex justify-between h-16 items-center">
+
+      <!-- Left: Logo + Links -->
+      <div class="flex items-center space-x-6">
+        <%= link_to "BugMS", root_path, class: "text-2xl font-bold text-purple-600" %>
+        <%= link_to "Home", root_path, class: "text-gray-700 hover:text-purple-600 font-medium" %>
+        <%= link_to "Bugs", bugs_path, class: "text-gray-700 hover:text-purple-600 font-medium" %>
+        <%= link_to "About", about_path, class: "text-gray-700 hover:text-purple-600 font-medium" %>
+        <%= link_to "Contact", contact_path, class: "text-gray-700 hover:text-purple-600 font-medium" %>
+      </div>
+
+      <!-- Right: Signup Button -->
+      <div class="hidden md:flex">
+        <%= link_to "Sign Up", signup_path, class: "bg-purple-600 px-4 py-2 text-white rounded-lg hover:bg-purple-700 font-medium" %>
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <button id="mobile-menu-btn" class="md:hidden focus:outline-none">
+        <svg class="w-8 h-8 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="md:hidden hidden px-4 pb-4 space-y-2">
+    <%= link_to "Home", root_path, class: "block text-gray-700 hover:text-purple-600 font-medium" %>
+    <%= link_to "Bugs", bugs_path, class: "block text-gray-700 hover:text-purple-600 font-medium" %>
+    <%= link_to "About", about_path, class: "block text-gray-700 hover:text-purple-600 font-medium" %>
+    <%= link_to "Contact", contact_path, class: "block text-gray-700 hover:text-purple-600 font-medium" %>
+    <%= link_to "Sign Up", signup_path, class: "block w-full bg-purple-600 px-4 py-2 text-white rounded-lg hover:bg-purple-700 font-medium" %>
+  </div>
+</nav>
+<script>
+  document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  });
+</script>

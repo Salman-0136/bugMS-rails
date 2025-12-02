@@ -1,0 +1,7 @@
+<h1 class="text-3xl font-bold mb-6 text-gray-800text-center">
+  <%= @bug.new_record? ? "Add New Bug" : "Edit Bug" %>
+</h1>
+
+<%= render "form", bug: @bug %>
+
+<%= link_to "Back", bugs_path, class: "text-gray-500 hover:underline mt-4 block" %>

@@ -1,0 +1,59 @@
+<%= form_with(model: @bug, local: true, class: "bg-white shadow-lg rounded-2xl p-8 max-w-3xl mx-auto") do |f| %>
+  <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">🐞 Report a Bug</h2>
+
+  <div class="space-y-6">
+
+    <!-- Title -->
+    <div>
+      <%= f.label :title, class: "block text-gray-700 font-medium mb-2" %>
+      <%= f.text_field :title, placeholder: "Bug title...", class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <%= f.label :description, class: "block text-gray-700 font-medium mb-2" %>
+      <%= f.text_area :description, rows: 4, placeholder: "Describe the bug in detail...", class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition resize-none" %>
+    </div>
+
+    <!-- Priority, Status, Severity & Bug Type -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <%= f.label :priority, class: "block text-gray-700 font-medium mb-2" %>
+        <%= f.select :priority, Bug.priorities.keys.map { |p| [p.titleize, p] }, {}, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+      </div>
+
+      <div>
+        <%= f.label :status, class: "block text-gray-700 font-medium mb-2" %>
+        <%= f.select :status, Bug.statuses.keys.map { |s| [s.titleize, s] }, {}, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+      </div>
+
+      <div>
+        <%= f.label :severity, class: "block text-gray-700 font-medium mb-2" %>
+        <%= f.select :severity, Bug.severities.keys.map { |s| [s.titleize, s] }, {}, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+      </div>
+
+      <div>
+        <%= f.label :bug_type, class: "block text-gray-700 font-medium mb-2" %>
+        <%= f.select :bug_type, Bug.bug_types.keys.map { |b| [b.titleize, b] }, {}, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+      </div>
+    </div>
+
+    <!-- Due Date -->
+    <div>
+      <%= f.label :due_date, class: "block text-gray-700 font-medium mb-2" %>
+      <%= f.date_field :due_date, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+    </div>
+
+    <!-- Assign Users -->
+    <div>
+      <%= f.label :users, "Assign Users", class: "block text-gray-700 font-medium mb-2" %>
+      <%= f.collection_select :user_ids, User.all, :id, :name, { prompt: "Select Users", multiple: true }, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="mt-6 text-center">
+      <%= f.submit "Submit Bug", class: "bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-2xl shadow-lg transition transform hover:-translate-y-1" %>
+    </div>
+
+  </div>
+<% end %>

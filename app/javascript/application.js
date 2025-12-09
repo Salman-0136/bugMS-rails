@@ -1,3 +1,19 @@
-// Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
+// Rails / Turbo
 import "@hotwired/turbo-rails"
-import "controllers"
+import * as ActiveStorage from "@rails/activestorage"
+ActiveStorage.start()
+
+// Stimulus
+import { Application } from "@hotwired/stimulus"
+import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
+
+// Start Stimulus
+const application = Application.start()
+
+// Make it globally accessible for console debugging
+window.Stimulus = application
+
+// Load all controllers from app/javascript/controllers
+eagerLoadControllersFrom("controllers", application)
+
+export { application }

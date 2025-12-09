@@ -1,5 +1,8 @@
 class UsersController < ApplicationController
   before_action :set_user, only: [ :show, :edit, :update, :destroy ]
+  before_action :require_login, except: [ :new, :create ]
+  before_action :require_admin, only: [ :index, :destroy ]
+  before_action :manage_profile_authorization, only: [ :edit, :destroy ]
 
   # GET /users
   def index
@@ -19,16 +22,15 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
     if @user.save
-      redirect_to root_path, notice: "Welcome, User"
+      redirect_to root_path, notice: "Welcome, #{@user.name}! Your account has been created."
     else
-      puts @user.errors.full_messages
-      render :new
+      flash.now[:alert] = "Please fix the errors below."
+      render :new, status: :unprocessable_entity
     end
   end
 
   # GET /users/:id/edit
   def edit
-    redirect_to root_path, alert: "Access denied." unless current_user == @user || admin?
   end
 
   # PATCH/PUT /users/:id
@@ -36,13 +38,20 @@ class UsersController < ApplicationController
     if @user.update(user_params)
       redirect_to @user, notice: "Profile updated successfully."
     else
-      render :edit
+      flash.now[:alert] = "Please fix the errors below."
+      render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
     @user.destroy
-    redirect_to users_path, notice: "User deleted."
+    redirect_to users_path, notice: "User deleted successfully."
+  end
+
+  def manage_profile_authorization!
+    unless can_manage_profile?(@user)
+      redirect_back(fallback_location: root_path, alert: "You are not authorized to perform this.")
+    end
   end
 
   private
@@ -52,6 +61,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation, :profile_image)
+    params.require(:user).permit(:name, :email, :password, :password_confirmation, :profile_image, :role, is_admin: false)
   end
 end

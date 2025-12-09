@@ -1,0 +1,120 @@
+<div class="max-w-7xl mx-auto mt-10 px-4">
+
+  <!-- ✅ Hero / Page Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div class="mb-4 md:mb-0">
+      <h1 class="text-5xl font-extrabold text-purple-700">Projects Dashboard</h1>
+      <p class="text-gray-600 mt-2">
+        Manage all projects, assign users, track bugs, and keep everything under control.
+      </p>
+    </div>
+
+    <%= link_to "Create New Project",
+        new_project_path,
+        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow transition duration-200 font-semibold" %>
+  </div>
+
+  <!-- ✅ Summary Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white shadow-lg rounded-2xl p-6 text-center">
+      <span class="text-gray-500">Total Projects</span>
+      <div class="text-3xl font-bold text-purple-700 mt-2"><%= @projects.count %></div>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-2xl p-6 text-center">
+      <span class="text-gray-500">Total Users</span>
+      <div class="text-3xl font-bold text-green-600 mt-2"><%= User.count %></div>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-2xl p-6 text-center">
+      <span class="text-gray-500">Total Bugs</span>
+      <div class="text-3xl font-bold text-red-600 mt-2"><%= Bug.count %></div>
+    </div>
+  </div>
+
+  <!-- ✅ PROJECT CARDS GRID -->
+  <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+    <% @projects.each do |project| %>
+    <div class="bg-white shadow-lg rounded-2xl p-6 flex flex-col hover:shadow-2xl transition duration-300 mb-7">
+
+      <!-- ✅ Project Name -->
+      <h2 class="text-2xl font-bold text-purple-700 mb-2">
+        <%= project.name %>
+      </h2>
+
+      <!-- ✅ Description -->
+      <p class="text-gray-600 mb-4 line-clamp-3">
+        <%= project.description.presence || "No description provided." %>
+      </p>
+
+      <!-- ✅ Manager -->
+      <p class="text-gray-600 mb-2">
+        <span class="font-semibold">Manager:</span>
+        <% if project.manager_id.present? %>
+        <%= project.manager.name %>
+        <% else %>
+        <span class="italic text-gray-400">No manager</span>
+        <% end %>
+      </p>
+
+      <!-- ✅ Assigned Users -->
+      <div class="mb-3">
+        <span class="font-semibold text-gray-700">Users:</span>
+        <% if project.assigned_users.any? %>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <% project.assigned_users.each do |user| %>
+          <span class="bg-purple-100 text-purple-800 text-xs font-medium px-2 py-1 rounded-full">
+            <%= user.name %>
+          </span>
+          <% end %>
+        </div>
+        <% else %>
+        <span class="italic text-gray-400">None</span>
+        <% end %>
+      </div>
+
+      <!-- ✅ Bugs -->
+      <div class="mb-4">
+        <span class="font-semibold text-gray-700">Bugs:</span>
+        <% if project.bugs.any? %>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <% project.bugs.each do |bug| %>
+          <% status_class =
+                  case bug.status
+                  when "open" then "bg-red-100 text-red-700"
+                  when "reopened" then "bg-green-100 text-green-700"
+                  when "closed" then "bg-blue-100 text-red-700"
+                  end
+                %>
+
+          <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
+            <%= bug.title %> (<%= bug.status.humanize %>)
+          </span>
+          <% end %>
+        </div>
+        <% else %>
+        <span class="italic text-gray-400">No bugs</span>
+        <% end %>
+      </div>
+
+      <!-- ✅ Created Date -->
+      <p class="text-gray-400 text-xs mb-4">
+        Created on: <%= project.created_at.strftime("%b %d, %Y") %>
+      </p>
+
+      <!-- ✅ Action Buttons -->
+      <div class="flex flex-wrap gap-3 mt-6">
+        <%= link_to "View Project", project_path(project), class: "bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
+        <% if can_manage_project?(project) %>
+          <%= link_to "Create New Bug", new_bug_path(project_id: project.id), class: "bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
+          <%= link_to "Edit Project", edit_project_path(project), class: "bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
+          <% if delete_project?(project) %>
+            <%= button_to "Delete", project_path(project), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+    <% end %>
+  </div>
+
+</div>

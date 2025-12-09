@@ -1,0 +1,85 @@
+<h1 class="text-3xl font-bold mb-8 text-gray-800">My Projects</h1>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+  <% @projects.each do |project| %>
+    <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow">
+
+      <!-- ✅ Project Title -->
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">
+        <%= project.name %>
+      </h2>
+
+      <!-- ✅ Project Description -->
+      <p class="text-sm text-gray-600 mb-4">
+        <%= project.description.presence || "No description provided." %>
+      </p>
+
+      <!-- ✅ Total Bugs Count -->
+      <p class="text-sm text-gray-500 mb-4">
+        Total Bugs: <span class="font-semibold"><%= project.bugs.count %></span>
+      </p>
+
+      <div class="mb-4">
+        <span class="font-semibold text-gray-700">Bugs:</span>
+        <% if project.bugs.any? %>
+        <div class="flex flex-wrap gap-1 mt-1">
+          <% project.bugs.each do |bug| %>
+          <% status_class =
+                  case bug.status
+                  when "open" then "bg-red-100 text-red-700"
+                  when "in_progress" then "bg-yellow-100 text-yellow-700"
+                  when "closed" then "bg-green-100 text-green-700"
+                  end
+                %>
+
+          <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
+            <%= bug.title %> (<%= bug.status.humanize %>)
+          </span>
+          <% end %>
+        </div>
+        <% else %>
+        <span class="italic text-gray-400">No bugs</span>
+        <% end %>
+      </div>
+
+      <!-- ✅ Created Date -->
+      <p class="text-gray-400 text-xs mb-4">
+        Created on: <%= project.created_at.strftime("%b %d, %Y") %>
+      </p>
+
+      <!-- ✅ Actions -->
+      <div class="flex flex-wrap gap-2 mt-4">
+
+        <!-- ✅ View Project -->
+        <%= link_to "View",
+            project_path(project),
+            class: "bg-blue-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-blue-700 transition" %>
+
+        <%= link_to "Edit",
+            edit_project_path(project),
+            class: "bg-yellow-500 text-white px-4 py-1 rounded-lg text-sm hover:bg-yellow-700 transition" %>
+
+        <% if delete_project?(project) %>
+          <%= button_to "Delete",
+            project_path(project),
+            method: :delete,
+            form: { data: { turbo_confirm: "⚠️ Are you sure? This will delete the project and all its bugs!" } },
+            class: "bg-red-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-red-700 transition" %>
+        <% end %>
+
+        <!-- ✅ Create Bug -->
+        <%= link_to "Create Bug",
+            new_bug_path(project_id: project.id),
+            class: "bg-green-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-green-700 transition" %>
+
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- ✅ Empty State -->
+<% if @projects.empty? %>
+  <p class="text-gray-500 text-center mt-12">
+    You have no projects yet.
+  </p>
+<% end %>

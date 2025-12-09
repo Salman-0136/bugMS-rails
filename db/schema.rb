@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_01_074115) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_05_093410) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -62,6 +62,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_01_074115) do
     t.integer "bug_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "project_id", null: false
+    t.index ["project_id"], name: "index_bugs_on_project_id"
   end
 
   create_table "comments", force: :cascade do |t|
@@ -74,20 +76,34 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_01_074115) do
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
 
+  create_table "projects", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.integer "manager_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "projects_users", id: false, force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.bigint "user_id", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email"
     t.string "password_digest"
-    t.string "role"
-    t.boolean "is_admin"
+    t.boolean "is_admin", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "role", default: 0, null: false
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "bug_assignments", "bugs"
   add_foreign_key "bug_assignments", "users"
+  add_foreign_key "bugs", "projects"
   add_foreign_key "comments", "bugs"
   add_foreign_key "comments", "users"
 end

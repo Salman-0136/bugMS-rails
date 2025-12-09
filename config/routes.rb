@@ -38,4 +38,19 @@ Rails.application.routes.draw do
   get "comments/new", to: "comments#new", as: :new_comment
   post "comments", to: "comments#create"
   delete "comments/:id", to: "comments#destroy"
+
+  get "login", to: "sessions#new", as: :login
+  post "login", to: "sessions#create"
+  delete "logout", to: "sessions#destroy", as: :logout
+
+  get "projects", to: "projects#index", as: :projects
+  get "projects/new", to: "projects#new", as: :new_project
+  post "projects", to: "projects#create"
+  get "projects/:id", to: "projects#show", as: :project
+  get "projects/:id/edit", to: "projects#edit", as: :edit_project
+  patch "projects/:id", to: "projects#update"
+  delete "projects/:id", to: "projects#destroy"
+  get "my_projects", to: "projects#my_projects", as: :my_projects
+
+  get "/search", to: "search#index", as: "search"
 end

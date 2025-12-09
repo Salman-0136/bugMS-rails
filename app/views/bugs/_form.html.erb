@@ -1,7 +1,10 @@
 <%= form_with(model: @bug, local: true, class: "bg-white shadow-lg rounded-2xl p-8 max-w-3xl mx-auto") do |f| %>
   <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">🐞 Report a Bug</h2>
+  <%= render 'shared/errors', object: @bug %>
 
   <div class="space-y-6">
+
+    <%= f.hidden_field :project_id, value: @project.id %>
 
     <!-- Title -->
     <div>
@@ -47,7 +50,7 @@
     <!-- Assign Users -->
     <div>
       <%= f.label :users, "Assign Users", class: "block text-gray-700 font-medium mb-2" %>
-      <%= f.collection_select :user_ids, User.all, :id, :name, { prompt: "Select Users", multiple: true }, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
+      <%= f.collection_select :user_ids, @project.assigned_users, :id, :name, { prompt: "Select Users", multiple: true }, class: "w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-400 focus:border-transparent outline-none transition" %>
     </div>
 
     <!-- Submit Button -->

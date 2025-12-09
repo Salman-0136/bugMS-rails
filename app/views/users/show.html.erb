@@ -1,18 +1,93 @@
-<div class="max-w-2xl mx-auto mt-16 bg-white p-8 rounded-xl shadow-lg">
-  <h1 class="text-3xl font-bold mb-4 text-purple-700"><%= @user.name %></h1>
-  <p class="text-gray-700 mb-6"><strong>Email:</strong> <%= @user.email %></p>
-  <p class="text-gray-700 mb-6"><strong>Role:</strong> 
-    <% if @user.admin? %>
-      <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">Admin</span>
-    <% else %>
-      <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">User</span>
-    <% end %>
-  </p>
+<div class="max-w-4xl mx-auto mt-16 bg-white p-10 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300">
 
-  <div class="flex gap-4">
-    <% if current_user == @user || admin? %>
-      <%= link_to "Edit Profile", edit_user_path(@user), class: "bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-2 rounded-lg font-semibold" %>
+  <!-- Profile Header -->
+  <div class="flex flex-col items-center mb-10">
+    <% if @user.profile_image.attached? %>
+    <%= image_tag url_for(@user.profile_image), class: "w-32 h-32 rounded-full object-cover border-4 border-purple-300 shadow-lg mb-4 transition-transform duration-300 hover:scale-105" %>
+    <% else %>
+    <%= image_tag "default-user.png", class: "w-32 h-32 rounded-full object-cover border-4 border-purple-300 shadow-lg mb-4 transition-transform duration-300 hover:scale-105" %>
     <% end %>
-    <%= link_to "Back", users_path, class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-semibold" %>
+
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2"><%= @user.name %></h1>
+
+    <p class="text-gray-500 mb-4 text-sm md:text-base"><strong>Email:</strong> <%= @user.email %></p>
+
+    <p class="mb-4">
+      <strong>Role:</strong>
+      <% if @user.is_admin? %>
+      <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow-sm">Admin</span>
+      <% else %>
+      <span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs md:text-sm font-semibold shadow-sm">
+        <%= @user.role.titleize %>
+      </span>
+      <% end %>
+    </p>
+
+
+    <!-- Stats -->
+    <% unless @user.is_admin? %>
+    <div class="flex gap-6 mt-4">
+      <div class="text-center">
+        <p class="text-2xl font-bold text-gray-900"><%= @user.bugs.count %></p>
+        <p class="text-gray-500 text-sm">Assigned Bugs</p>
+      </div>
+      <div class="text-center">
+        <p class="text-2xl font-bold text-gray-900"><%= @user.comments.count %></p>
+        <p class="text-gray-500 text-sm">Comments</p>
+      </div>
+    </div>
+    <% end %>
   </div>
+
+  <!-- Role & Permissions -->
+  <div class="bg-purple-50 p-6 rounded-xl shadow-sm mb-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Role & Permissions</h2>
+    <p class="text-gray-600 mb-2"><strong>Role:</strong>
+      <% if @user.is_admin? %>
+      Admin
+      <% else %>
+      <%= @user.role.present? ? @user.role.titleize : "User" %>
+      <% end %>
+    </p>
+
+    <% if @user.is_admin? %>
+    <p class="text-green-700 font-medium">This user has administrative privileges.</p>
+    <% else %>
+    <p class="text-gray-700 font-medium">This user is a <%= @user.role.titleize %>.</p>
+    <% end %>
+
+  </div>
+
+  <!-- Assigned Bugs -->
+  <% unless @user.is_admin? %>
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Assigned Bugs</h2>
+    <% if @user.bugs.any? %>
+    <ul class="space-y-2">
+      <% @user.bugs.each do |bug| %>
+      <li class="bg-white p-4 rounded-xl shadow hover:shadow-md transition flex justify-between items-center">
+        <span class="text-gray-800 font-medium"><%= bug.title %></span>
+        <span class="px-2 py-1 rounded-full text-xs font-semibold
+              <%= 'bg-red-100 text-red-700' if bug.priority == 'high' %>
+              <%= 'bg-yellow-100 text-yellow-800' if bug.priority == 'medium' %>
+              <%= 'bg-green-100 text-green-700' if bug.priority == 'low' %>">
+          <%= bug.priority.capitalize %>
+        </span>
+      </li>
+      <% end %>
+    </ul>
+    <% else %>
+    <p class="text-gray-500">No bugs assigned.</p>
+    <% end %>
+  </div>
+  <% end %>
+
+  <!-- Action Buttons -->
+  <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
+    <% if can_manage_profile?(@user) %>
+      <%= link_to "Edit Profile", edit_user_path(@user), class: "bg-yellow-400 hover:bg-yellow-500 text-white px-6 py-3 rounded-2xl font-semibold shadow-md transition transform hover:-translate-y-1 hover:shadow-lg text-center" %>
+      <%= link_to "Back to Users", users_path, class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-semibold shadow-md transition transform hover:-translate-y-1 hover:shadow-lg text-center" %>
+    <% end %>
+  </div>
+
 </div>

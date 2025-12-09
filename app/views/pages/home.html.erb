@@ -1,86 +1,186 @@
-<div class="w-full px-4 md:px-8 lg:px-16">
-  <!-- Header Section -->
-  <header class="mb-12 text-center">
-    <h1 class="text-5xl font-extrabold text-gray-900 tracking-tight">Welcome to BugMS</h1>
-    <p class="text-gray-500 mt-4 text-lg">Manage your bugs efficiently and stay on top of your development workflow.</p>
-  </header>
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-  <!-- Overview Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 mb-12">
-    <!-- Total Bugs -->
-    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 shadow-lg rounded-xl p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
+  <% if logged_in? %>
+
+  <!-- ✅ Overview Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
+
+    <div class="bg-gradient-to-r from-purple-500 to-indigo-500 shadow-lg rounded-xl p-4 sm:p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
       <div>
-        <p class="text-sm uppercase font-semibold">Total Bugs</p>
-        <p class="text-3xl font-bold"><%= Bug.count %></p>
+        <p class="text-xs sm:text-sm uppercase font-semibold">Total Bugs</p>
+        <p class="text-2xl sm:text-3xl font-bold"><%= Bug.count %></p>
       </div>
-      <div class="text-4xl opacity-80">
-        <i class="fas fa-bug"></i>
-      </div>
+      <i class="fas fa-bug text-3xl sm:text-4xl opacity-80"></i>
     </div>
 
-    <!-- Open Bugs -->
-    <div class="bg-gradient-to-r from-green-400 to-teal-500 shadow-lg rounded-xl p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
+    <div class="bg-gradient-to-r from-green-400 to-teal-500 shadow-lg rounded-xl p-4 sm:p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
       <div>
-        <p class="text-sm uppercase font-semibold">Open Bugs</p>
-        <p class="text-3xl font-bold"><%= Bug.where(status: :open).count %></p>
+        <p class="text-xs sm:text-sm uppercase font-semibold">Open Bugs</p>
+        <p class="text-2xl sm:text-3xl font-bold"><%= Bug.where(status: :open).count %></p>
       </div>
-      <div class="text-4xl opacity-80">
-        <i class="fas fa-exclamation-circle"></i>
-      </div>
+      <i class="fas fa-exclamation-circle text-3xl sm:text-4xl opacity-80"></i>
     </div>
 
-    <!-- Closed Bugs -->
-    <div class="bg-gradient-to-r from-red-400 to-pink-500 shadow-lg rounded-xl p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
+    <div class="bg-gradient-to-r from-red-400 to-pink-500 shadow-lg rounded-xl p-4 sm:p-6 text-white flex items-center justify-between hover:scale-105 transition-transform">
       <div>
-        <p class="text-sm uppercase font-semibold">Closed Bugs</p>
-        <p class="text-3xl font-bold"><%= Bug.where(status: :closed).count %></p>
+        <p class="text-xs sm:text-sm uppercase font-semibold">Closed Bugs</p>
+        <p class="text-2xl sm:text-3xl font-bold"><%= Bug.where(status: :closed).count %></p>
       </div>
-      <div class="text-4xl opacity-80">
-        <i class="fas fa-check-circle"></i>
+      <i class="fas fa-check-circle text-3xl sm:text-4xl opacity-80"></i>
+    </div>
+
+  </div>
+
+  <!-- ✅ Recent Bugs Table -->
+  <section class="bg-white shadow-xl rounded-2xl p-3 sm:p-6 overflow-x-auto">
+    <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Recent Bugs</h2>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-[800px] w-full border-collapse">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600">Title</th>
+            <th class="px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600">Priority</th>
+            <th class="px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600">Status</th>
+            <th class="px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600">Bug Assignees</th>
+            <th class="px-4 py-3 text-left text-xs sm:text-sm font-semibold text-gray-600">Due Date</th>
+          </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y divide-gray-200">
+          <% Bug.order(created_at: :desc).limit(5).each do |bug| %>
+          <tr class="hover:bg-gray-50 transition">
+
+            <!-- ✅ Title -->
+            <td class="px-4 py-3 text-sm font-medium text-gray-800 text-left whitespace-nowrap">
+              <%= bug.title %>
+            </td>
+
+            <!-- ✅ Priority -->
+            <td class="px-4 py-3 text-left">
+              <% priority_colors = { "low" => "bg-green-200 text-green-800", "medium" => "bg-yellow-200 text-yellow-800", "high" => "bg-red-200 text-red-800" } %>
+              <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold <%= priority_colors[bug.priority] %> capitalize">
+                <%= bug.priority %>
+              </span>
+            </td>
+
+            <!-- ✅ Status -->
+            <td class="px-4 py-3 text-left">
+              <% status_colors = { "open" => "bg-green-100 text-green-800", "closed" => "bg-red-100 text-red-800", "reopened" => "bg-yellow-100 text-yellow-800" } %>
+              <span class="inline-block px-2 py-1 rounded-full text-xs font-semibold <%= status_colors[bug.status] %> capitalize">
+                <%= bug.status %>
+              </span>
+            </td>
+
+            <!-- ✅ Assigned Users (FIXED) -->
+            <td class="px-4 py-3 text-left">
+              <div class="flex flex-wrap gap-1 max-w-[200px]">
+                <% bug.users.each do |user| %>
+                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                  <%= user.name %>
+                </span>
+                <% end %>
+              </div>
+            </td>
+
+            <!-- ✅ Due Date -->
+            <td class="px-4 py-3 text-left text-sm text-gray-600 whitespace-nowrap">
+              <%= bug.due_date&.strftime("%d %b %Y") %>
+            </td>
+
+          </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ✅ Quick Actions -->
+  <section class="mt-10 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <%= link_to "Add New Project", new_project_path,
+          class: "w-full text-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold" %>
+
+    <%= link_to "View My Bugs", my_bugs_path,
+          class: "w-full text-center bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold" %>
+  </section>
+  <% else %>
+  <!-- ✅ Guest Cards -->
+  <div class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12 px-4 sm:px-6 lg:px-8">
+
+      <div class="bg-orange-200 shadow-md rounded-2xl p-8 text-center text-orange-700 hover:shadow-lg transition-transform hover:scale-105">
+        <i class="fas fa-bug text-5xl mb-4"></i>
+        <h3 class="text-xl font-semibold mb-2">Track Bugs</h3>
+        <p class="text-sm text-orange-800">Monitor and report bugs efficiently with real-time updates.</p>
+      </div>
+
+      <div class="bg-pink-100 shadow-md rounded-2xl p-8 text-center text-pink-700 hover:shadow-lg transition-transform hover:scale-105">
+        <i class="fas fa-project-diagram text-5xl mb-4"></i>
+        <h3 class="text-xl font-semibold mb-2">Manage Projects</h3>
+        <p class="text-sm text-pink-800">Organize projects and track progress seamlessly.</p>
+      </div>
+
+      <div class="bg-fuchsia-200 shadow-md rounded-2xl p-8 text-center text-fuchsia-700 hover:shadow-lg transition-transform hover:scale-105">
+        <i class="fas fa-users text-5xl mb-4"></i>
+        <h3 class="text-xl font-semibold mb-2">Collaborate</h3>
+        <p class="text-sm text-fuchsia-800">Work with your team in real-time to resolve bugs faster.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ✅ How It Works Section -->
+  <div class="py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">How BugMS Works</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-10 text-center">
+
+        <div class="p-8 bg-indigo-200 text-indigo-700 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:scale-105 flex flex-col items-center">
+          <i class="fas fa-pencil-alt text-4xl mb-4"></i>
+          <h3 class="text-lg font-semibold mb-2">1. Report</h3>
+          <p class="text-sm text-indigo-800">Submit bugs quickly with title, description, and priority.</p>
+        </div>
+
+        <div class="p-8 bg-yellow-200 text-yellow-700 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:scale-105 flex flex-col items-center">
+          <i class="fas fa-tasks text-4xl mb-4"></i>
+          <h3 class="text-lg font-semibold mb-2">2. Assign</h3>
+          <p class="text-sm text-yellow-800">Assign bugs to team members and track progress efficiently.</p>
+        </div>
+
+        <div class="p-8 bg-red-200 text-red-700 rounded-2xl shadow-md hover:shadow-lg transition-transform hover:scale-105 flex flex-col items-center">
+          <i class="fas fa-check-circle text-4xl mb-4"></i>
+          <h3 class="text-lg font-semibold mb-2">3. Resolve</h3>
+          <p class="text-sm text-red-800">Fix bugs efficiently and close them with full tracking history.</p>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- Recent Bugs Table -->
-  <section class="bg-white shadow-xl rounded-2xl p-6 overflow-x-auto">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Recent Bugs</h2>
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-100 rounded-t-xl">
-        <tr>
-          <th class="px-4 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">Title</th>
-          <th class="px-4 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">Priority</th>
-          <th class="px-4 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">Status</th>
-          <th class="px-4 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">Assigned Users</th>
-          <th class="px-4 py-3 text-left text-gray-600 font-medium uppercase tracking-wider">Due Date</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        <% Bug.order(created_at: :desc).limit(5).each do |bug| %>
-          <tr class="hover:bg-gray-50 transition-colors">
-            <td class="px-4 py-3 font-medium text-gray-800"><%= bug.title %></td>
-            <td class="px-4 py-3">
-              <% priority_colors = { "low" => "bg-green-200 text-green-800", "medium" => "bg-yellow-200 text-yellow-800", "high" => "bg-red-200 text-red-800" } %>
-              <span class="px-2 py-1 rounded-full text-xs font-semibold <%= priority_colors[bug.priority] %> capitalize"><%= bug.priority %></span>
-            </td>
-            <td class="px-4 py-3">
-              <% status_colors = { "open" => "bg-green-100 text-green-800", "closed" => "bg-red-100 text-red-800", "reopened" => "bg-yellow-100 text-yellow-800" } %>
-              <span class="px-2 py-1 rounded-full text-xs font-semibold <%= status_colors[bug.status] %> capitalize"><%= bug.status %></span>
-            </td>
-            <td class="px-4 py-3 flex flex-wrap gap-1">
-              <% bug.users.each do |user| %>
-                <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium"><%= user.name %></span>
-              <% end %>
-            </td>
-            <td class="px-4 py-3 text-gray-600"><%= bug.due_date&.strftime("%d %b %Y") %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  </section>
+  <!-- ✅ Testimonials Section -->
+  <div class="bg-gray-50 py-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">What Our Users Say</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
 
-  <!-- Quick Actions -->
-  <section class="mt-12 flex flex-col sm:flex-row gap-4 justify-center">
-    <%= link_to "Add New Bug", new_bug_path, class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold transition-colors" %>
-    <%= link_to "View My Bugs", my_bugs_path, class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl shadow-lg font-semibold transition-colors" %>
-  </section>
+        <div class="bg-red-100 shadow-md rounded-2xl p-8 hover:shadow-lg transition-transform hover:scale-105">
+          <p class="italic text-red-600 mb-4">"BugMS helped our team track bugs 3x faster. Highly recommend!"</p>
+          <p class="font-semibold text-red-800">— Sarah J.</p>
+        </div>
+
+        <div class="bg-yellow-100 shadow-md rounded-2xl p-8 hover:shadow-lg transition-transform hover:scale-105">
+          <p class="italic text-yellow-600 mb-4">"Intuitive and clean interface. Makes bug tracking effortless."</p>
+          <p class="font-semibold text-yellow-800">— Ahmed K.</p>
+        </div>
+
+        <div class="bg-blue-100 shadow-md rounded-2xl p-8 hover:shadow-lg transition-transform hover:scale-105">
+          <p class="italic text-blue-600 mb-4">"Perfect for small and medium teams. Saves a lot of time."</p>
+          <p class="font-semibold text-blue-800">— Lisa M.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <% end %>
+
 </div>

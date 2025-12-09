@@ -1,55 +1,85 @@
-<div class="max-w-5xl mx-auto py-16 px-6">
+<div class="max-w-6xl mx-auto py-10 sm:py-14 lg:py-16 px-4 sm:px-6 lg:px-8">
 
-  <!-- Header -->
-  <div class="text-center mb-12">
-    <h1 class="text-5xl font-bold text-slate-800 mb-4">About BugMS</h1>
-    <p class="text-slate-600 text-lg max-w-2xl mx-auto">
+  <!-- ✅ Header -->
+  <div class="text-center mb-10 sm:mb-14">
+    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-800 mb-4">
+      About BugMS
+    </h1>
+
+    <p class="text-slate-600 text-base sm:text-lg max-w-2xl mx-auto">
       BugMS is a lightweight, fast, and team-friendly bug tracking system designed
       to help developers manage issues with clarity and efficiency.
     </p>
   </div>
 
-  <!-- About Image -->
-  <div class="flex justify-center mb-16">
-    <%= image_tag "about.jpg", alt: "Bug Tracking", class: "rounded-2xl shadow-lg w-full max-w-3xl" %>
+  <!-- ✅ About Image -->
+  <div class="flex justify-center mb-12 sm:mb-16">
+    <%= image_tag "about.jpg",
+      alt: "Bug Tracking",
+      class: "rounded-2xl shadow-lg w-full max-w-sm sm:max-w-2xl lg:max-w-3xl object-cover" %>
   </div>
 
-  <!-- Features -->
-  <div class="grid md:grid-cols-3 gap-6">
+  <!-- ✅ Features -->
+  <!-- ✅ Features -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-10">
 
-    <div class="p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-rose-50">
-      <h2 class="text-xl font-semibold text-slate-800 mb-3">🔧 Simple & Efficient</h2>
-      <p class="text-slate-700">
+    <div class="p-8 sm:p-10 min-h-[280px] rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-rose-50 flex flex-col justify-between">
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-4">
+        🔧 Simple & Efficient
+      </h2>
+      <p class="text-slate-700 text-sm sm:text-base mb-4">
         A clean UI that allows teams to report and manage bugs without distractions.
       </p>
-    </div>
-
-    <div class="p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-amber-50">
-      <h2 class="text-xl font-semibold text-slate-800 mb-3">📊 Team Collaboration</h2>
-      <p class="text-slate-700">
-        Assign bugs, track status, set priorities, and keep your workflow smooth.
+      <p class="text-slate-600 text-sm sm:text-base">
+        Supports quick issue reporting, categorization, and progress tracking.
       </p>
     </div>
 
-    <div class="p-6 rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-teal-50">
-      <h2 class="text-xl font-semibold text-slate-800 mb-3">🔒 Secure & Stable</h2>
-      <p class="text-slate-700">
+    <div class="p-8 sm:p-10 min-h-[280px] rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-amber-50 flex flex-col justify-between">
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-4">
+        📊 Team Collaboration
+      </h2>
+      <p class="text-slate-700 text-sm sm:text-base mb-4">
+        Assign bugs, track status, set priorities, and keep your workflow smooth.
+      </p>
+      <p class="text-slate-600 text-sm sm:text-base">
+        Easily coordinate with team members and monitor project health.
+      </p>
+    </div>
+
+    <div class="p-8 sm:p-10 min-h-[280px] rounded-2xl shadow-md hover:shadow-xl transition border border-gray-100 bg-teal-50 flex flex-col justify-between">
+      <h2 class="text-lg sm:text-xl font-semibold text-slate-800 mb-4">
+        🔒 Secure & Stable
+      </h2>
+      <p class="text-slate-700 text-sm sm:text-base mb-4">
         Built with Rails security best practices to protect your data and users.
+      </p>
+      <p class="text-slate-600 text-sm sm:text-base">
+        Regular updates, role-based access, and safe authentication.
       </p>
     </div>
 
   </div>
 
-  <!-- Technology Section -->
-  <div class="mt-16 bg-gray-50 p-10 rounded-2xl border border-gray-200 shadow-sm">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6 text-center">🚀 Powered by Modern Technologies</h2>
 
-    <div class="grid md:grid-cols-2 gap-8 text-center">
+  <!-- ✅ Technology Section -->
+  <div class="mt-12 sm:mt-16 bg-gray-50 p-6 sm:p-10 rounded-2xl border border-gray-200 shadow-sm">
+    <h2 class="text-xl sm:text-2xl font-bold text-slate-800 mb-6 text-center">
+      🚀 Powered by Modern Technologies
+    </h2>
 
-      <div class="flex flex-col items-center bg-gray-50 p-6 rounded-2xl shadow hover:shadow-lg transition">
-        <%= image_tag "rails-logo.png", alt: "Ruby on Rails", class: "w-20 h-20 object-contain mb-4" %>
-        <h3 class="text-lg font-semibold text-slate-700 mb-2">Backend</h3>
-        <ul class="text-slate-600 space-y-1">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-center">
+
+      <div class="flex flex-col items-center bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+        <%= image_tag "rails-logo.png",
+          alt: "Ruby on Rails",
+          class: "w-16 sm:w-20 h-16 sm:h-20 object-contain mb-4" %>
+
+        <h3 class="text-base sm:text-lg font-semibold text-slate-700 mb-2">
+          Backend
+        </h3>
+
+        <ul class="text-slate-600 space-y-1 text-sm sm:text-base">
           <li>• Ruby on Rails</li>
           <li>• MVC Architecture</li>
           <li>• RESTful Routing</li>
@@ -57,10 +87,16 @@
         </ul>
       </div>
 
-      <div class="flex flex-col items-center bg-gray-50 p-6 rounded-2xl shadow hover:shadow-lg transition">
-        <%= image_tag "tailwind-logo.png", alt: "Tailwind CSS", class: "w-20 h-20 object-contain mb-4" %>
-        <h3 class="text-lg font-semibold text-slate-700 mb-2">Frontend & Tools</h3>
-        <ul class="text-slate-600 space-y-1">
+      <div class="flex flex-col items-center bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+        <%= image_tag "tailwind-logo.png",
+          alt: "Tailwind CSS",
+          class: "w-16 sm:w-20 h-16 sm:h-20 object-contain mb-4" %>
+
+        <h3 class="text-base sm:text-lg font-semibold text-slate-700 mb-2">
+          Frontend & Tools
+        </h3>
+
+        <ul class="text-slate-600 space-y-1 text-sm sm:text-base">
           <li>• Tailwind CSS</li>
           <li>• Turbo & Stimulus</li>
           <li>• Responsive Layouts</li>
@@ -71,11 +107,13 @@
     </div>
   </div>
 
+  <!-- ✅ Mission -->
+  <div class="mt-12 sm:mt-16 text-center">
+    <h2 class="text-2xl sm:text-3xl font-bold text-slate-800 mb-4">
+      🎯 Our Mission
+    </h2>
 
-  <!-- Mission -->
-  <div class="mt-16 text-center">
-    <h2 class="text-3xl font-bold text-slate-800 mb-4">🎯 Our Mission</h2>
-    <p class="text-slate-600 max-w-3xl mx-auto text-lg">
+    <p class="text-slate-600 max-w-3xl mb-10 mx-auto text-base sm:text-lg">
       Our mission is to provide developers with a smooth and powerful tool for
       tracking and resolving bugs. BugMS focuses on clarity, performance, and
       simplicity—helping teams deliver high-quality software.

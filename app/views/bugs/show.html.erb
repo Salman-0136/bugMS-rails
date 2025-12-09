@@ -8,58 +8,68 @@
 
   <!-- Bug Details -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-
-    <!-- Priority -->
     <div>
       <span class="font-semibold text-gray-700">Priority:</span>
       <span class="<%= case @bug.priority
                         when 'low' then 'bg-green-100 text-green-700'
                         when 'medium' then 'bg-yellow-100 text-yellow-700'
-                        when 'high' then 'bg-orange-100 text-orange-700'
-                        when 'critical' then 'bg-red-100 text-red-700'
+                        when 'high' then 'bg-red-100 text-red-700'
                       end %> px-3 py-1 rounded-full text-sm font-medium">
         <%= @bug.priority.titleize %>
       </span>
     </div>
 
-    <!-- Status -->
     <div>
       <span class="font-semibold text-gray-700">Status:</span>
       <span class="<%= case @bug.status
                         when 'open' then 'bg-blue-100 text-blue-700'
-                        when 'in_progress' then 'bg-purple-100 text-purple-700'
-                        when 'closed' then 'bg-gray-200 text-gray-800'
+                        when 'reopened' then 'bg-green-100 text-green-700'
+                        when 'closed' then 'bg-red-200 text-red-800'
                       end %> px-3 py-1 rounded-full text-sm font-medium">
         <%= @bug.status.titleize %>
       </span>
     </div>
 
-    <!-- Due Date -->
     <div>
       <span class="font-semibold text-gray-700">Due Date:</span>
       <span class="text-gray-800"><%= @bug.due_date&.strftime("%d %b %Y") %></span>
     </div>
 
-    <!-- Severity -->
     <% if @bug.respond_to?(:severity) %>
     <div>
       <span class="font-semibold text-gray-700">Severity:</span>
       <span class="<%= case @bug.severity&.downcase
-                          when 'low' then 'bg-green-100 text-green-700'
-                          when 'medium' then 'bg-yellow-100 text-yellow-700'
-                          when 'high' then 'bg-orange-100 text-orange-700'
-                          when 'critical' then 'bg-red-100 text-red-700'
-                        end %> px-3 py-1 rounded-full text-sm font-medium">
+                            when 'minor' then 'bg-yellow-100 text-yellow-700'
+                            when 'major' then 'bg-orange-100 text-orange-700'
+                            when 'critical' then 'bg-red-100 text-red-700'
+                          end %> px-3 py-1 rounded-full text-sm font-medium">
         <%= @bug.severity&.titleize %>
       </span>
     </div>
     <% end %>
-
   </div>
 
-  <!-- Assigned Users -->
+  <!-- Project Manager -->
   <div class="mb-6">
-    <span class="font-semibold text-gray-700">Assigned Users:</span>
+    <span class="font-semibold text-gray-700">Project Manager:</span>
+    <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs mr-2 mt-1">
+      <%= @bug.project.manager.name %>
+    </span>
+  </div>
+
+  <!-- Project Assigned Users -->
+  <div class="mb-6">
+    <span class="font-semibold text-gray-700">Project Assignees:</span>
+    <% @bug.project.assigned_users.each do |user| %>
+    <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs mr-2 mt-1">
+      <%= user.name %>
+    </span>
+    <% end %>
+  </div>
+
+  <!-- Bug Assigned Users -->
+  <div class="mb-6">
+    <span class="font-semibold text-gray-700">Bug Assignees:</span>
     <% @bug.users.each do |user| %>
     <span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs mr-2 mt-1">
       <%= user.name %>
@@ -67,12 +77,38 @@
     <% end %>
   </div>
 
-  <!-- Action Buttons -->
+  <% if @bug.closed? %>
+    <span class="ml-4 text-gray-600 font-medium">
+      Closed after <%= @bug.formatted_time_lapse %> minutes
+    </span>
+  <% end %>
+
   <div class="flex flex-wrap gap-4 mb-8">
-    <%= link_to "Edit Bug", edit_bug_path(@bug), class: "bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
-    <%= link_to "Delete Bug", bug_path(@bug), method: :delete, data: { confirm: "Are you sure?" }, class: "bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
-    <%= link_to "Back to Bugs", bugs_path, class: "bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
+    <% if can_manage_bug?(@bug) %>
+    <%= link_to "Edit Bug", edit_bug_path(@bug),
+          class: "bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
+
+    <%= link_to "Delete Bug", bug_path(@bug),
+          method: :delete, data: { confirm: "Are you sure?" },
+          class: "bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
+
+    <% if @bug.closed? %>
+    <%= button_to "Reopen Bug", bug_path(@bug),
+            method: :patch,
+            params: { bug: { reopen_request: true } },
+            class: "bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-xl shadow" %>
+    <% else %>
+    <%= button_to "Close Bug", bug_path(@bug),
+            method: :patch,
+            params: { bug: { close_request: true, completed_at: Time.current } },
+            class: "bg-blue-600 hover:bg-purple-700 text-white px-6 py-2 rounded-xl shadow" %>
+    <% end %>
+    <% end %>
+
+    <%= link_to "Back to Bugs", bugs_path,
+        class: "bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
   </div>
+
 
   <!-- Comments Section -->
   <div class="mt-12">
@@ -80,52 +116,38 @@
 
     <% if @bug.comments.any? %>
     <ul class="space-y-4 mb-6">
-      <% @bug.comments.each do |comment| %>
+      <% @bug.comments.order(created_at: :asc).each do |comment| %>
       <li class="p-4 bg-gray-50 rounded-xl shadow-sm">
         <p class="text-gray-800">
           <strong><%= comment.user&.name || "Anonymous" %>:</strong>
           <%= comment.content %>
         </p>
-
         <p class="text-xs text-gray-500 mt-1">
           <%= comment.created_at.strftime("%d %b %Y, %H:%M") %>
         </p>
 
-        <!-- Attachments Preview -->
         <% if comment.attachments.attached? %>
         <div class="mt-4 space-y-3">
-
           <% comment.attachments.each do |file| %>
-          <% content_type = file.content_type %>
+          <% if file.content_type.start_with?("image/") %>
+          <%= image_tag file.variant(resize_to_limit: [300, 300]), class: "rounded-lg shadow border" %>
 
-          <!-- Images -->
-          <% if content_type.start_with?("image") %>
-          <%= image_tag file, class: "w-40 rounded-lg shadow border" %>
-
-          <!-- Videos -->
-          <% elsif content_type.start_with?("video") %>
+          <% elsif file.content_type.start_with?("video/") %>
           <video controls class="w-64 rounded-lg shadow border">
             <source src="<%= url_for(file) %>" type="<%= file.content_type %>">
           </video>
-
-          <!-- Other Files -->
           <% else %>
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />
             </svg>
-            <%= link_to file.filename, url_for(file), 
-                  class: "text-blue-600 underline hover:text-blue-800" %>
+            <%= link_to file.filename, url_for(file), class: "text-blue-600 underline hover:text-blue-800" %>
           </div>
-
           <% end %>
-
           <% end %>
-
         </div>
         <% end %>
       </li>
-
       <% end %>
     </ul>
     <% else %>
@@ -133,16 +155,14 @@
     <% end %>
 
     <!-- Add Comment Form -->
-    <!-- Add Comment Form -->
+    <% if can_manage_bug?(@bug) %>
     <%= form_with model: Comment.new, url: comments_path, local: true, multipart: true do |f| %>
     <%= f.hidden_field :bug_id, value: @bug.id %>
-    <%= f.hidden_field :user_id, value: current_user.id %>
 
     <div class="mb-4">
       <%= f.text_area :content, rows: 3, placeholder: "Add a comment...", class: "w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400" %>
     </div>
 
-    <!-- Attachments -->
     <div class="mb-4">
       <%= f.label :attachments, "Attach files (optional)", class: "text-gray-700 font-medium" %>
       <%= f.file_field :attachments, multiple: true, direct_upload: true,
@@ -153,7 +173,7 @@
       <%= f.submit "Post Comment", class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-xl shadow" %>
     </div>
     <% end %>
-
+    <% end %>
 
   </div>
 

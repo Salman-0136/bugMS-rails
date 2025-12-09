@@ -1,70 +1,68 @@
-<%= form_with model: @user, local: true, multipart: true, class: "bg-white shadow-lg rounded-2xl p-12 w-full max-w-full mx-auto" do |f| %>
-<h2 class="text-3xl font-bold text-slate-800 mb-8 text-center">👤 Sign Up</h2>
-
-<% if @user.errors.any? %>
-<div class="mb-6 p-4 border border-red-300 bg-red-50 rounded-lg">
-  <h3 class="text-red-700 font-semibold mb-2">
-    <%= pluralize(@user.errors.count, "error") %> prohibited this user from being saved:
-  </h3>
-  <ul class="list-disc list-inside text-red-700">
-    <% @user.errors.full_messages.each do |msg| %>
-    <li><%= msg %></li>
-    <% end %>
-  </ul>
-</div>
-<% end %>
+<%= form_with(model: user, local: true, multipart: true, class: form_class) do |f| %>
+<%= render 'shared/errors', object: user %>
 
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
   <!-- Name -->
   <div class="relative">
-    <i class="fas fa-user absolute left-3 top-3 text-gray-400 mt-8"></i>
     <%= f.label :name, class: "block text-gray-700 font-medium mb-1" %>
-    <%= f.text_field :name, class: "w-full pl-10 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
+    <%= f.text_field :name, class: "w-full pl-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
   </div>
 
   <!-- Email -->
   <div class="relative">
-    <i class="fas fa-envelope absolute left-3 top-3 text-gray-400 mt-8"></i>
     <%= f.label :email, class: "block text-gray-700 font-medium mb-1" %>
-    <%= f.email_field :email, class: "w-full pl-10 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
+    <%= f.email_field :email, class: "w-full pl-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
   </div>
 
   <!-- Password -->
   <div class="relative">
-    <i class="fas fa-lock absolute left-3 top-3 text-gray-400 mt-8"></i>
-    <%= f.label :password, (@user.new_record? ? "Password" : "Password (leave blank if unchanged)"), class: "block text-gray-700 font-medium mb-1" %>
-    <%= f.password_field :password, class: "w-full pl-10 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
+    <%= f.label :password, class: "block text-gray-700 font-medium mb-1" %>
+    <%= f.password_field :password, placeholder: (user.persisted? ? "Leave blank to keep current password" : ""), class: "w-full pl-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
   </div>
 
   <!-- Password Confirmation -->
   <div class="relative">
-    <i class="fas fa-lock absolute left-3 top-3 text-gray-400 mt-8"></i>
     <%= f.label :password_confirmation, class: "block text-gray-700 font-medium mb-1" %>
-    <%= f.password_field :password_confirmation, class: "w-full pl-10 px-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
+    <%= f.password_field :password_confirmation, class: "w-full pl-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition" %>
   </div>
 
-  <!-- Profile Picture Upload -->
+  <!-- Profile Image -->
   <div class="md:col-span-2">
     <%= f.label :profile_image, "Profile Picture", class: "block text-gray-700 font-medium mb-2" %>
-    <div class="flex items-center gap-4">
-      <%= f.file_field :profile_image, class: "w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none transition", accept: "image/*", onchange: "loadPreview(event)" %>
-      <!-- Preview -->
-      <div class="w-24 h-24 bg-gray-200 rounded-full overflow-hidden">
-        <img id="profile-preview" class="w-full h-full object-cover" src="<%= @user.profile_image.attached? ? url_for(@user.profile_image) : '' %>" alt="Preview">
-      </div>
+    <%= f.file_field :profile_image, class: "w-full px-3 py-3 border rounded-lg", accept: "image/*", onchange: "loadPreview(event)" %>
+    <div class="w-32 h-32 bg-gray-200 rounded-full overflow-hidden mt-2 mx-auto">
+      <img id="profile-preview" class="w-full h-full object-cover" src="<%= user.persisted? && user.profile_image.attached? ? url_for(user.profile_image) : '' %>" alt="Preview">
     </div>
+
   </div>
 
-  <!-- Submit Button -->
-  <div class="md:col-span-2 flex justify-center mt-8">
-    <%= f.submit (@user.new_record? ? "Create User" : "Update User"), 
-      class: "bg-purple-600 hover:bg-purple-700 text-white px-10 py-3 rounded-2xl font-semibold text-lg shadow-lg transition transform hover:-translate-y-1" %>
+  <!-- Role (only for edit/admin) -->
+  <% if defined?(roles) && roles.present? %>
+  <div class="md:col-span-2">
+    <%= f.label :role, class: "block text-gray-700 font-medium mb-2" %>
+    <%= f.select :role, roles.map { |r| [r.titleize, r] }, {}, class: "w-full border border-gray-300 rounded-xl px-5 py-3 focus:ring-2 focus:ring-purple-400 focus:border-transparent outline-none shadow-sm hover:shadow-md transition bg-white" %>
   </div>
   <% end %>
 
-  <script>
-    function loadPreview(event) {
-      const output = document.getElementById('profile-preview');
-      output.src = URL.createObjectURL(event.target.files[0]);
-    }
-  </script>
+  <!-- Submit Button + Optional Login Link -->
+  <div class="md:col-span-2 flex flex-col items-center mt-6">
+    <%= f.submit submit_label, class: "bg-purple-600 hover:bg-purple-700 text-white px-10 py-3 rounded-2xl font-semibold text-lg shadow-lg transition transform hover:-translate-y-1" %>
+
+    <% if defined?(show_login_link) && show_login_link %>
+    <p class="mt-4 text-gray-600 text-center">
+      Already have an account?
+      <%= link_to "Login", login_path, class: "text-purple-600 font-semibold hover:text-purple-700" %>
+    </p>
+    <% end %>
+  </div>
+
+</div>
+<% end %>
+
+<script>
+  function loadPreview(event) {
+    const output = document.getElementById('profile-preview');
+    output.src = URL.createObjectURL(event.target.files[0]);
+  }
+</script>

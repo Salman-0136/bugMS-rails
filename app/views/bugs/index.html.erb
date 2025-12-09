@@ -41,8 +41,17 @@
           <span class="text-gray-700 font-medium">Due: <%= bug.due_date&.strftime("%d %b %Y") %></span>
         </div>
 
-        <!-- Assigned Users -->
+        <!-- Project Assigned Users -->
         <div class="flex flex-wrap gap-2 mb-4">
+          <p class="text-sm font-semi-bold mt-1">Project Assignees</p>
+          <% bug.project.assigned_users.each do |user| %>
+            <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium"><%= user.name %></span>
+          <% end %>
+        </div>
+
+        <!-- Bug Assigned Users -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          <p class="text-sm font-semi-bold mt-1">Bug Assignees</p>
           <% bug.users.each do |user| %>
             <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium"><%= user.name %></span>
           <% end %>
@@ -54,10 +63,5 @@
         </div>
       </div>
     <% end %>
-  </div>
-
-  <!-- Add New Bug Button -->
-  <div class="mt-12 flex justify-center">
-    <%= link_to "Add New Bug", new_bug_path, class: "bg-gray-800 hover:bg-gray-900 text-white px-6 py-3 rounded-2xl shadow-md font-semibold text-lg transition" %>
   </div>
 </div>

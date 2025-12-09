@@ -1,0 +1,9 @@
+class Project < ApplicationRecord
+  belongs_to :manager, class_name: "User", foreign_key: "manager_id"
+  has_and_belongs_to_many :assigned_users, class_name: "User", join_table: "projects_users"
+  has_many :bugs, dependent: :destroy
+
+  validates :name, presence: true
+  validates :description, presence: true
+  validates :manager_id, presence: true
+end

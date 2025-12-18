@@ -1,0 +1,91 @@
+<div class="max-w-7xl mx-auto mt-10 px-4">
+
+  <!-- Page Header -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+    <div>
+      <h1 class="text-4xl font-extrabold text-purple-700">
+        Bugs for <span class="text-gray-900"><%= @project.name %></span>
+      </h1>
+      <p class="text-gray-500 mt-2">
+        Track, manage, and review all bugs related to this project.
+      </p>
+    </div>
+  </div>
+
+  <% if @bugs.any? %>
+    <!-- Bugs Grid -->
+    <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+      <% @bugs.each do |bug| %>
+        <% status_class =
+          case bug.status
+          when "open" then "bg-red-100 text-red-700"
+          when "reopened" then "bg-yellow-100 text-yellow-700"
+          when "closed" then "bg-green-100 text-green-700"
+          end
+        %>
+
+        <% priority_class =
+          case bug.priority
+          when "high" then "text-red-600"
+          when "medium" then "text-yellow-600"
+          when "low" then "text-green-600"
+          end
+        %>
+
+        <div class="bg-white rounded-2xl shadow hover:shadow-xl transition duration-300 p-5 flex flex-col justify-between">
+
+          <!-- Bug Title -->
+          <div>
+            <h2 class="text-lg font-bold text-gray-800 mb-1 truncate">
+              <%= bug.title %>
+            </h2>
+
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2">
+              <%= bug.description.presence || "No description provided." %>
+            </p>
+          </div>
+
+          <!-- Metadata -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="text-xs font-semibold px-3 py-1 rounded-full <%= status_class %>">
+              <%= bug.status.humanize %>
+            </span>
+
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 <%= priority_class %>">
+              Priority: <%= bug.priority.humanize %>
+            </span>
+
+            <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-100 text-blue-700">
+              <%= bug.bug_type.humanize %>
+            </span>
+          </div>
+
+          <!-- Footer -->
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-xs text-gray-400">
+              Created <%= time_ago_in_words(bug.created_at) %> ago
+            </span>
+
+            <%= link_to "View Bug",
+              bug_path(bug),
+              class: "text-sm font-semibold text-purple-600 hover:text-purple-800 hover:underline" %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <!-- Pagination -->
+    <div class="mt-10 flex justify-center">
+      <%= paginate @bugs %>
+    </div>
+
+  <% else %>
+    <!-- Empty State -->
+    <div class="bg-white rounded-xl shadow p-10 text-center">
+      <p class="text-gray-500 italic text-lg">
+        No bugs found for this project 🚀
+      </p>
+    </div>
+  <% end %>
+
+</div>

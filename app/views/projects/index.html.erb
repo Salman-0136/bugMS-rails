@@ -9,9 +9,14 @@
       </p>
     </div>
 
-    <%= link_to "Create New Project",
+    <div class="gap-2">
+      <%= link_to "Create New Project",
         new_project_path,
-        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl shadow transition duration-200 font-semibold" %>
+        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+      <%= link_to "Import Projects",
+        import_projects_page_path,
+        class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+    </div>
   </div>
 
   <!-- ✅ Summary Stats -->
@@ -48,14 +53,11 @@
       </p>
 
       <!-- ✅ Manager -->
-      <p class="text-gray-600 mb-2">
+      <span class="mb-2">
         <span class="font-semibold">Manager:</span>
-        <% if project.manager_id.present? %>
-        <%= project.manager.name %>
-        <% else %>
-        <span class="italic text-gray-400">No manager</span>
-        <% end %>
-      </p>
+        <%= project.manager&.name || content_tag(:span, "No manager", class: "italic text-gray-400") %>
+      </span>
+
 
       <!-- ✅ Assigned Users -->
       <div class="mb-3">
@@ -73,30 +75,50 @@
         <% end %>
       </div>
 
-      <!-- ✅ Bugs -->
       <div class="mb-4">
         <span class="font-semibold text-gray-700">Bugs:</span>
-        <% if project.bugs.any? %>
-        <div class="flex flex-wrap gap-1 mt-1">
-          <% project.bugs.each do |bug| %>
-          <% status_class =
+
+        <% if can_manage_project?(project) %>
+          <% bug_count = project.bugs.size %>
+
+          <% if bug_count == 0 %>
+            <span class="italic text-gray-400">No bugs</span>
+
+          <% elsif bug_count <= 10 %>
+            <div class="flex flex-wrap gap-1 mt-1">
+              <% project.bugs.each do |bug| %>
+                <% status_class =
                   case bug.status
                   when "open" then "bg-red-100 text-red-700"
                   when "reopened" then "bg-green-100 text-green-700"
-                  when "closed" then "bg-blue-100 text-red-700"
+                  when "closed" then "bg-blue-100 text-blue-700"
                   end
                 %>
 
-          <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
-            <%= bug.title %> (<%= bug.status.humanize %>)
-          </span>
+                <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
+                  <%= bug.title %>
+                </span>
+              <% end %>
+            </div>
+
+          <% else %>
+            <div class="mt-2">
+              <p class="text-sm text-gray-600 mb-2">
+                <%= bug_count %> bugs found
+              </p>
+              <%= link_to "View All Bugs",
+                    project_bugs_path(project.id),
+                    class: "inline-block bg-purple-600 hover:bg-purple-700 text-white text-sm px-4 py-2 rounded-lg shadow transition" %>
+            </div>
           <% end %>
-        </div>
+
         <% else %>
-        <span class="italic text-gray-400">No bugs</span>
+          <span class="italic text-gray-400">
+            You are not allowed to see bugs of this project.
+          </span>
         <% end %>
       </div>
-
+      
       <!-- ✅ Created Date -->
       <p class="text-gray-400 text-xs mb-4">
         Created on: <%= project.created_at.strftime("%b %d, %Y") %>
@@ -116,5 +138,10 @@
     </div>
     <% end %>
   </div>
-
+  <!-- ✅ Download CSV Button -->
+  <div class="mt-10 text-center mb-10">
+    <%= link_to "Download All Projects CSV",
+        export_projects_path,
+        class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+  </div>
 </div>

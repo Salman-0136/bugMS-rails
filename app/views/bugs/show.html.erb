@@ -88,9 +88,10 @@
     <%= link_to "Edit Bug", edit_bug_path(@bug),
           class: "bg-yellow-500 hover:bg-yellow-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
 
-    <%= link_to "Delete Bug", bug_path(@bug),
-          method: :delete, data: { confirm: "Are you sure?" },
-          class: "bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %>
+    <%= button_to "Delete Bug", bug_path(@bug),
+          method: :delete,
+          data: { turbo_confirm: "Are you sure?" },
+          class: "bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-xl shadow transition transform hover:-translate-y-1" %> 
 
     <% if @bug.closed? %>
     <%= button_to "Reopen Bug", bug_path(@bug),

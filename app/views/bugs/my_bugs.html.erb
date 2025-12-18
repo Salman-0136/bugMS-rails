@@ -1,36 +1,98 @@
-<h1 class="text-3xl font-bold mb-8 text-gray-800">My Bugs</h1>
+<!-- Header -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-3xl font-semibold tracking-tight text-gray-900">
+      My Bugs
+    </h1>
+    <p class="text-sm text-gray-600 mt-1">
+      Issues currently assigned to you
+    </p>
+  </div>
+</div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Bugs Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
   <% @bugs.each do |bug| %>
-    <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow">
-      <!-- Bug Title & Priority -->
-      <div class="flex justify-between items-start mb-4">
-        <h2 class="text-xl font-semibold text-gray-800"><%= bug.title %></h2>
-        <span class="px-3 py-1 text-sm font-medium rounded-full <%= bug.priority == 'high' ? 'bg-red-100 text-red-600' : bug.priority == 'medium' ? 'bg-yellow-100 text-yellow-600' : 'bg-green-100 text-green-600' %>">
-          <%= bug.priority.capitalize %>
-        </span>
-      </div>
+    <div class="relative rounded-xl p-[1px]
+      <%= bug.priority == 'high' ? 'bg-gradient-to-br from-red-400 to-pink-500' :
+          bug.priority == 'medium' ? 'bg-gradient-to-br from-yellow-400 to-orange-400' :
+          bug.priority == 'low' ? 'bg-gradient-to-br from-yellow-400 to-green-400' :
+          'bg-gradient-to-br from-green-400 to-emerald-500' %>">
 
-      <!-- Status & Due Date -->
-      <div class="flex justify-between items-center mb-4">
-        <span class="text-sm font-medium <%= bug.status == 'open' ? 'text-blue-600' : bug.status == 'in_progress' ? 'text-yellow-500' : 'text-gray-500' %> capitalize">
-          <%= bug.status.humanize %>
-        </span>
-        <span class="text-sm text-gray-500">
-          Due: <%= bug.due_date&.strftime("%d %b %Y") || "N/A" %>
-        </span>
-      </div>
+      <!-- Card Body -->
+      <div class="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-200">
 
-      <!-- Actions -->
-      <div class="flex justify-between mt-4">
-        <%= link_to "View", bug_path(bug), class: "text-blue-600 hover:underline font-medium" %>
-        <%= link_to "Edit", edit_bug_path(bug), class: "text-yellow-500 hover:underline font-medium" %>
-        <%= link_to "Delete", bug_path(bug), method: :delete, data: { confirm: "Are you sure?" }, class: "text-red-500 hover:underline font-medium" %>
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-2">
+          <span class="px-2 py-0.5 text-sm rounded-full font-semibold
+            <%= bug.priority == 'high' ? 'bg-red-200 text-red-700' :
+                bug.priority == 'medium' ? 'bg-yellow-200 text-yellow-700' :
+                'bg-green-200 text-green-700' %>">
+            <%= bug.priority.capitalize %>
+          </span>
+
+          <span class="px-2 py-0.5 text-sm rounded-full font-semibold
+            <%= bug.status == 'open' ? 'bg-blue-100 text-blue-700' :
+                bug.status == 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                'bg-red-200 text-red-700' %>">
+            <%= bug.status.humanize %>
+          </span>
+        </div>
+
+        <!-- Title -->
+        <h2 class="text-base font-semibold text-gray-900 leading-snug mb-2 line-clamp-2">
+          <%= bug.title %>
+        </h2>
+
+        <!-- Due Date -->
+        <div class="text-xs text-gray-600 mb-3">
+          Due:
+          <span class="font-medium text-gray-800">
+            <%= bug.due_date&.strftime("%d %b %Y") || "Not set" %>
+          </span>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between border-t pt-2">
+          <%= link_to bug_path(bug),
+            class: "text-xs font-semibold text-indigo-600 hover:text-indigo-800" do %>
+            View →
+          <% end %>
+
+          <div class="flex gap-2">
+            <%= link_to edit_bug_path(bug),
+              class: "px-3 py-1 rounded-md text-xs font-medium
+                      bg-yellow-100 text-yellow-700
+                      hover:bg-yellow-200 transition" do %>
+              Edit
+            <% end %>
+            <%= button_to bug_path(bug), method: :delete, data: { turbo_confirm: "Want to delete this bug?" } do %>
+              <span class="px-3 py-1 rounded-md text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition">
+                Delete
+              </span>
+            <% end %>
+          </div>
+        </div>
       </div>
     </div>
   <% end %>
 </div>
 
+<!-- Empty State -->
 <% if @bugs.empty? %>
-  <p class="text-gray-500 text-center mt-12">You have no bugs assigned yet.</p>
+  <div class="flex flex-col items-center justify-center mt-24">
+    <div class="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center mb-4">
+      <span class="text-indigo-500 text-2xl">✓</span>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-800">
+      No bugs assigned
+    </h3>
+    <p class="text-sm text-gray-600 mt-1">
+      You're currently not responsible for any issues.
+    </p>
+  </div>
 <% end %>
+
+<div class="mt-10 flex justify-center">
+  <%= paginate @bugs %>
+</div>

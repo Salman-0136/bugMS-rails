@@ -6,7 +6,10 @@ class BugsController < ApplicationController
   before_action :authorize_bug_creation!, only: [ :new, :create ]
 
   def index
-    @bugs = Bug.all.order(created_at: :desc)
+    @bugs = Bug.includes(:users, project: :assigned_users)
+              .order(created_at: :desc)
+              .page(params[:page])
+              .per(20)
   end
 
   def show
@@ -58,7 +61,99 @@ class BugsController < ApplicationController
   end
 
   def my_bugs
-    @bugs = current_user.bugs.order(created_at: :desc)
+    @bugs = current_user
+              .bugs
+              .order(created_at: :desc)
+              .page(params[:page])
+              .per(15)
+  end
+
+  def import_page
+  end
+
+  def import
+    file = params[:file]
+    unless file && (file.content_type == "text/csv" || File.extname(file.original_filename) == ".csv")
+      redirect_to import_bugs_page_path, alert: "Please select a valid CSV file."
+      return
+    end
+
+    # Create a permanent tmp/uploads directory if it doesn't exist
+    uploads_dir = Rails.root.join("tmp", "uploads")
+    FileUtils.mkdir_p(uploads_dir) unless Dir.exist?(uploads_dir)
+
+    # Save uploaded file there
+    temp_file_path = uploads_dir.join("bug_import_#{SecureRandom.hex(8)}.csv")
+    File.open(temp_file_path, "wb") { |f| f.write(file.read) }
+
+    # Pass the file path to Sidekiq Job
+    BugImportJob.perform_later(temp_file_path.to_s, current_user.id)
+
+    redirect_to import_bugs_results_path, notice: "CSV import started. Check progress below."
+  end
+
+  def import_results
+    result_file = Dir.glob(
+      Rails.root.join("tmp", "import_bug_result_user_#{current_user.id}*.yml")
+    ).max_by { |f| File.mtime(f) }
+
+    @result =
+      if result_file && File.exist?(result_file)
+        YAML.load_file(result_file).deep_symbolize_keys
+      else
+        { success_count: 0, failures: [], failed_file: nil, processing: true }
+      end
+
+    respond_to do |format|
+      format.html
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "import_results",
+          partial: "shared/import_results",
+          locals: { result: @result }
+        )
+      end
+    end
+  end
+
+  def import_result_download
+    result_file = Dir.glob(
+      Rails.root.join("tmp", "import_bug_result_user_#{params[:id]}*.yml")
+    ).max_by { |f| File.mtime(f) }
+
+    if result_file && File.exist?(result_file)
+      result = YAML.load_file(result_file).deep_symbolize_keys
+
+      if result[:failed_file] && File.exist?(result[:failed_file])
+        send_file result[:failed_file],
+                  type: "text/csv",
+                  filename: "failed_bugs_user_#{params[:id]}.csv",
+                  disposition: "attachment"
+      else
+        redirect_to import_bugs_results_path, alert: "No failed rows CSV found."
+      end
+    else
+      redirect_to import_bugs_results_path, alert: "No import result file found."
+    end
+  end
+
+  def export
+    send_data Bug.to_csv, filename: "bugs-#{Date.today}.csv"
+  end
+
+  def project_bugs
+    @project = Project.find(params[:project_id])
+
+    unless can_manage_project?(@project)
+      redirect_to projects_path, alert: "You are not authorized to view bugs for this project."
+      return
+    end
+
+    @bugs = @project.bugs
+                    .includes(:users)
+                    .order(created_at: :desc)
+                    .page(params[:page])
+                    .per(20)
   end
 
   private

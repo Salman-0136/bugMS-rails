@@ -5,6 +5,12 @@
     <p class="text-gray-500 mt-2 text-lg">Track all bugs here. Click on a bug to see details or update its status.</p>
   </header>
 
+  <div class="mb-8 mt-2 flex justify-end">
+    <%= link_to "Import Bugs",
+        import_bugs_page_path,
+        class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+  </div>
+
   <!-- Bugs Grid -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
     <% @bugs.each do |bug| %>
@@ -33,7 +39,7 @@
             Status:
             <span class="font-semibold
               <%= 'text-green-600' if bug.status == 'closed' %>
-              <%= 'text-yellow-600' if bug.status == 'in_progress' %>
+              <%= 'text-blue-600' if bug.status == 'reopened' %>
               <%= 'text-red-600' if bug.status == 'open' %>">
               <%= bug.status.humanize %>
             </span>
@@ -63,5 +69,13 @@
         </div>
       </div>
     <% end %>
+  </div>
+  <div class="mt-10 text-center mb-10">
+    <%= link_to "Download All Bugs CSV",
+        export_bugs_path,
+        class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+  </div>
+  <div class="mt-6">
+    <%= paginate @bugs%>
   </div>
 </div>

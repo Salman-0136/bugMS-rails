@@ -5,10 +5,14 @@
     <p class="text-gray-500 mt-2 text-lg">Track all bugs here. Click on a bug to see details or update its status.</p>
   </header>
 
-  <div class="mb-8 mt-2 flex justify-end">
-    <%= link_to "Import Bugs",
-        import_bugs_page_path,
-        class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+  <div class="flex justify-end mt-auto mb-5 mx-2 gap-4">
+    <% if can? :import, :Bugs %>
+    <%= link_to "Import Bugs", import_bugs_page_path, class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+    <% end %>
+    <% if can? :export, :Bugs %>
+    <%= link_to "Export Bugs CSV", export_bugs_path, class: "bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium transition" %>
+    <% end %>
+    <%= link_to "Download Export", download_export_bugs_path, class: "bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition" %>
   </div>
 
   <!-- Bugs Grid -->
@@ -31,7 +35,9 @@
         </div>
 
         <!-- Description -->
-        <p class="text-gray-600 mb-4"><%= truncate(bug.description, length: 100) %></p>
+        <p class="text-gray-600 mb-4 line-clamp-3">
+          <%= bug.description %>
+        </p>
 
         <!-- Status & Due Date -->
         <div class="flex justify-between items-center text-sm mb-4">
@@ -45,6 +51,12 @@
             </span>
           </span>
           <span class="text-gray-700 font-medium">Due: <%= bug.due_date&.strftime("%d %b %Y") %></span>
+        </div>
+
+        <!-- Project Manager -->
+        <div class="flex flex-wrap gap-2 mb-4">
+          <p class="text-sm font-semi-bold mt-1">Project Manager</p>
+          <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium"><%= bug.project.manager&.name %></span>
         </div>
 
         <!-- Project Assigned Users -->
@@ -65,17 +77,14 @@
 
         <!-- View Button Only -->
         <div class="flex justify-end mt-auto">
-          <%= link_to "View", bug_path(bug), class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+          <% if can? :read, bug %>
+            <%= link_to "View", bug_path(bug), class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+          <% end %>
         </div>
       </div>
     <% end %>
   </div>
-  <div class="mt-10 text-center mb-10">
-    <%= link_to "Download All Bugs CSV",
-        export_bugs_path,
-        class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
-  </div>
   <div class="mt-6">
-    <%= paginate @bugs%>
+    <%= render "kaminari/paginator", collection: @bugs %>
   </div>
 </div>

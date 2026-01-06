@@ -1,19 +1,13 @@
-// Rails / Turbo
 import "@hotwired/turbo-rails"
-import * as ActiveStorage from "@rails/activestorage"
-ActiveStorage.start()
-
-// Stimulus
 import { Application } from "@hotwired/stimulus"
-import { eagerLoadControllersFrom } from "@hotwired/stimulus-loading"
-
-// Start Stimulus
 const application = Application.start()
 
-// Make it globally accessible for console debugging
+// Manual controller registration for ESBuild
+import DashboardController from "./controllers/dashboard_controller"
+application.register("dashboard", DashboardController)
+
+import DropdownController from "./controllers/dropdown_controller"
+application.register("dropdown", DropdownController)
+
 window.Stimulus = application
-
-// Load all controllers from app/javascript/controllers
-eagerLoadControllersFrom("controllers", application)
-
 export { application }

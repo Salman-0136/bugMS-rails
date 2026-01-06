@@ -21,7 +21,7 @@
   </div>
 
   <!-- Project Manager -->
-  <% if delete_project?(@project) || @project.new_record? %>
+  <% if can?(:destroy, @project) || @project.new_record? %>
     <div>
       <%= f.label :manager_id, "Project Manager", class: "block text-gray-700 font-semibold mb-2" %>
       <%= f.collection_select :manager_id, @users, :id, :name, { prompt: "Select Manager" }, 

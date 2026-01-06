@@ -6,3 +6,6 @@ pin "@rails/activestorage", to: "@rails--activestorage.js" # @8.1.100
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin "@hotwired/turbo", to: "@hotwired--turbo.js" # @8.0.20
 pin "@rails/actioncable/src", to: "@rails--actioncable--src.js" # @8.1.100
+pin "chartkick" # @5.0.1
+pin "chart.js" # @4.5.1
+pin "@kurkle/color", to: "@kurkle--color.js" # @0.3.4

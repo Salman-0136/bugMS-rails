@@ -39,5 +39,7 @@
       </div>
     <% end %>
   </div>
-
+  <div class="mt-6 mb-5 flex justify-center">
+    <%= render "kaminari/paginator", collection: @users %>
+  </div>
 </div>

@@ -1,15 +1,16 @@
-<% if @bugs.total_pages > 1 %>
+<%# Accepts a paginated collection as a local variable %>
+<% collection = local_assigns[:collection] || [] %>
+
+<% if collection.respond_to?(:total_pages) && collection.total_pages > 1 %>
   <nav class="flex justify-center space-x-2 mt-4">
-    <%# Previous page link %>
-    <% if @bugs.prev_page %>
-      <%= link_to "Previous", url_for(page: @bugs.prev_page), class: "px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" %>
+    <% if collection.prev_page %>
+      <%= link_to "Previous", url_for(page: collection.prev_page), class: "px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" %>
     <% else %>
       <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400">Previous</span>
     <% end %>
 
-    <%# Next page link %>
-    <% if @bugs.next_page %>
-      <%= link_to "Next", url_for(page: @bugs.next_page), class: "px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" %>
+    <% if collection.next_page %>
+      <%= link_to "Next", url_for(page: collection.next_page), class: "px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300" %>
     <% else %>
       <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400">Next</span>
     <% end %>

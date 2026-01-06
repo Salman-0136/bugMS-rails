@@ -9,13 +9,15 @@
       </p>
     </div>
 
-    <div class="gap-2">
-      <%= link_to "Create New Project",
-        new_project_path,
-        class: "bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
-      <%= link_to "Import Projects",
-        import_projects_page_path,
-        class: "bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+    <div class="flex justify-end mt-auto mb-5 mx-2 gap-4">
+      <%= link_to "Create New Project", new_project_path, class: "bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+      <% if can? :import, :Projects %>
+      <%= link_to "Import Projects", import_projects_page_path, class: "bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition" %>
+      <% end %>
+      <% if can? :export, :Projects %>
+      <%= link_to "Export Projects CSV", export_projects_path, class: "bg-yellow-400 hover:bg-yellow-500 text-white px-4 py-2 rounded-lg font-medium transition" %>
+      <% end %>
+      <%= link_to "Download Export", download_export_projects_path, class: "bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-medium transition" %>
     </div>
   </div>
 
@@ -23,7 +25,7 @@
   <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10">
     <div class="bg-white shadow-lg rounded-2xl p-6 text-center">
       <span class="text-gray-500">Total Projects</span>
-      <div class="text-3xl font-bold text-purple-700 mt-2"><%= @projects.count %></div>
+      <div class="text-3xl font-bold text-purple-700 mt-2"><%= Project.count %></div>
     </div>
 
     <div class="bg-white shadow-lg rounded-2xl p-6 text-center">
@@ -78,29 +80,11 @@
       <div class="mb-4">
         <span class="font-semibold text-gray-700">Bugs:</span>
 
-        <% if can_manage_project?(project) %>
-          <% bug_count = project.bugs.size %>
+        <% if can? :view_bugs, project %>
+          <% bug_count = project.bugs_count %>
 
           <% if bug_count == 0 %>
             <span class="italic text-gray-400">No bugs</span>
-
-          <% elsif bug_count <= 10 %>
-            <div class="flex flex-wrap gap-1 mt-1">
-              <% project.bugs.each do |bug| %>
-                <% status_class =
-                  case bug.status
-                  when "open" then "bg-red-100 text-red-700"
-                  when "reopened" then "bg-green-100 text-green-700"
-                  when "closed" then "bg-blue-100 text-blue-700"
-                  end
-                %>
-
-                <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
-                  <%= bug.title %>
-                </span>
-              <% end %>
-            </div>
-
           <% else %>
             <div class="mt-2">
               <p class="text-sm text-gray-600 mb-2">
@@ -127,10 +111,15 @@
       <!-- ✅ Action Buttons -->
       <div class="flex flex-wrap gap-3 mt-6">
         <%= link_to "View Project", project_path(project), class: "bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
-        <% if can_manage_project?(project) %>
+
+        <% if can? :create, Bug.new(project_id: project.id) %>
           <%= link_to "Create New Bug", new_bug_path(project_id: project.id), class: "bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
+        <% end %>
+
+        <% if can? :manage, project %>
           <%= link_to "Edit Project", edit_project_path(project), class: "bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
-          <% if delete_project?(project) %>
+
+          <% if can? :destroy, project %>
             <%= button_to "Delete", project_path(project), method: :delete, data: { turbo_confirm: "Are you sure?" }, class: "bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow transition-all duration-200" %>
           <% end %>
         <% end %>
@@ -138,10 +127,7 @@
     </div>
     <% end %>
   </div>
-  <!-- ✅ Download CSV Button -->
-  <div class="mt-10 text-center mb-10">
-    <%= link_to "Download All Projects CSV",
-        export_projects_path,
-        class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg shadow transition duration-200 font-semibold" %>
+  <div class="mt-6 mb-5 flex justify-center">
+      <%= render "kaminari/paginator", collection: @projects %>
   </div>
 </div>

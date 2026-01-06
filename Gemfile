@@ -23,15 +23,15 @@ gem "heroicons-rails"
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 gem "mini_magick"
-gem "rack-timeout"
+# gem "rack-timeout"
 gem "sidekiq"
-# Gem to import millions of data
-gem "activerecord-import"
 # Gem for pagination
 gem "kaminari"
 # Use Redis adapter to run Action Cable in production
 gem "redis", ">= 4.0.1"
 gem "faker", "~> 3.2"
+gem "rack-mini-profiler", require: false
+gem "bullet"
 
 # Use Kredis to get higher-level data types in Redis [https://github.com/rails/kredis]
 # gem "kredis"
@@ -68,3 +68,9 @@ group :test do
 end
 
 gem "jsbundling-rails", "~> 1.3"
+
+gem "devise", "~> 4.9"
+gem "cancancan", "~> 3.4"
+gem "groupdate"
+gem "chartkick"
+gem "chart_js"

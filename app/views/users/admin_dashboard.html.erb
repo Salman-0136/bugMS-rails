@@ -1,0 +1,99 @@
+<h1 class="text-4xl font-bold text-purple-700 mb-8">Admin Dashboard</h1>
+
+<!-- KPI CARDS -->
+<div id="dashboard" class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10" data-controller="dashboard">
+  <div class="bg-purple-100 shadow rounded-2xl p-6 text-center">
+    <div class="text-gray-600 font-semibold">Total Users</div>
+    <div class="text-3xl font-bold text-purple-700 mt-2">
+      <%= @total_users %>
+    </div>
+  </div>
+
+  <div class="bg-green-100 shadow rounded-2xl p-6 text-center">
+    <div class="text-gray-600 font-semibold">Total Projects</div>
+    <div class="text-3xl font-bold text-green-700 mt-2">
+      <%= @total_projects %>
+    </div>
+  </div>
+
+  <div class="bg-red-100 shadow rounded-2xl p-6 text-center">
+    <div class="text-gray-600 font-semibold">Total Bugs</div>
+    <div class="text-3xl font-bold text-red-700 mt-2">
+      <%= @total_bugs %>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+
+  <div class="bg-white p-4 shadow rounded-2xl">
+    <h2 class="text-lg font-semibold text-center text-purple-700 mb-2">
+      Users Registered (Last 12 Months)
+    </h2>
+    <%= line_chart @users_chart,
+        height: "250px",
+        colors: ["#7e3af2"] %>
+  </div>
+
+  <div class="bg-white p-4 shadow rounded-2xl">
+    <h2 class="text-lg font-semibold text-center text-green-700 mb-2">
+      Projects Created
+    </h2>
+    <%= line_chart @projects_chart,
+        height: "250px",
+        colors: ["#16a34a"] %>
+  </div>
+
+  <div class="bg-white p-4 shadow rounded-2xl">
+    <h2 class="text-lg font-semibold text-center text-red-700 mb-2">
+      Bugs Reported
+    </h2>
+    <%= line_chart @bugs_chart,
+        height: "250px",
+        colors: ["#dc2626"] %>
+  </div>
+
+</div>
+
+<!-- USERS TABLE -->
+<div class="overflow-x-auto bg-white shadow-lg rounded-2xl">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-purple-100">
+      <tr>
+        <% ["ID", "Name", "Email", "Role", "Sign In Count",
+            "Current Sign In At", "Last Sign In At",
+            "Current IP", "Last IP"].each do |header| %>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+            <%= header %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+
+    <tbody class="bg-white divide-y divide-gray-200">
+      <% @users.each do |user| %>
+        <tr class="hover:bg-purple-50 transition-colors">
+          <td class="px-6 py-4 text-sm"><%= user.id %></td>
+          <td class="px-6 py-4 text-sm"><%= user.name %></td>
+          <td class="px-6 py-4 text-sm"><%= user.email %></td>
+          <td class="px-6 py-4 text-sm"><%= user.role %></td>
+          <td class="px-6 py-4 text-sm"><%= user.sign_in_count %></td>
+          <td class="px-6 py-4 text-sm">
+            <%= user.current_sign_in_at&.strftime("%b %d, %Y %H:%M") %>
+          </td>
+          <td class="px-6 py-4 text-sm">
+            <%= user.last_sign_in_at&.strftime("%b %d, %Y %H:%M") %>
+          </td>
+          <td class="px-6 py-4 text-sm"><%= user.current_sign_in_ip %></td>
+          <td class="px-6 py-4 text-sm"><%= user.last_sign_in_ip %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
+
+<!-- PAGINATION -->
+<div class="mt-6 mb-5 flex justify-center">
+  <%= render "kaminari/paginator", collection: @users %>
+</div>

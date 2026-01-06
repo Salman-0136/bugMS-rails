@@ -1,0 +1,15 @@
+<div class="max-w-xl mx-auto mt-10 p-8 bg-white rounded-2xl shadow-lg text-gray-800">
+  <div class="text-center mb-6">
+    <%= image_tag "email-confirmation.png", alt: "Confirm Email", class: "mx-auto w-32 h-32 object-contain" %>
+    <h1 class="text-2xl font-bold text-purple-700 mt-4">Welcome <%= @email %>!</h1>
+  </div>
+
+  <p class="mb-4">You can confirm your account email through the link below:</p>
+
+  <div class="text-center my-6">
+    <%= link_to 'Confirm my account', confirmation_url(@resource, confirmation_token: @token),
+          class: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-md inline-block transition" %>
+  </div>
+
+  <p class="text-sm text-gray-500 mt-4">If you did not sign up, please ignore this email.</p>
+</div>

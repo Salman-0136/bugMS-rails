@@ -1,15 +1,32 @@
 class BugsController < ApplicationController
-  before_action :set_bug, only: [ :show, :edit, :update, :destroy ]
-  before_action :require_login
-  before_action :authorize_bug!, only: [ :edit, :update, :destroy ]
+  load_and_authorize_resource except: [ :new, :create, :project_bugs, :my_bugs, :import_page, :import, :download_import_errors, :export ]
   before_action :set_project_for_new_and_create, only: [ :new, :create ]
-  before_action :authorize_bug_creation!, only: [ :new, :create ]
 
   def index
-    @bugs = Bug.includes(:users, project: :assigned_users)
-              .order(created_at: :desc)
-              .page(params[:page])
-              .per(20)
+    if current_user.is_admin?
+      # Admin sees all bugs
+      @bugs = Bug
+                .includes(:users, project: [ :manager, :assigned_users ])
+                .order(created_at: :desc)
+                .page(params[:page])
+                .per(20)
+    else
+      # Regular users see only their assigned bugs or bugs in their projects
+      @bugs = Bug
+                .left_joins(:users)
+                .left_joins(project: :assigned_users)
+                .where(
+                  "users.id = :user_id
+                  OR projects.manager_id = :user_id
+                  OR projects_users.user_id = :user_id",
+                  user_id: current_user.id
+                )
+                .includes(:users, project: [ :manager, :assigned_users ])
+                .distinct
+                .order(created_at: :desc)
+                .page(params[:page])
+                .per(20)
+    end
   end
 
   def show
@@ -17,10 +34,13 @@ class BugsController < ApplicationController
 
   def new
     @bug = Bug.new(project: @project)
+    authorize! :create, @bug
   end
 
   def create
     @bug = Bug.new(bug_params)
+    @bug.project = @project
+    authorize! :create, @bug
     if @bug.save
       redirect_to @bug, notice: "Bug was successfully created."
     else
@@ -61,106 +81,101 @@ class BugsController < ApplicationController
   end
 
   def my_bugs
-    @bugs = current_user
-              .bugs
-              .order(created_at: :desc)
-              .page(params[:page])
-              .per(15)
+    # Authorize generalized access, specific bugs are filtered in the query
+
+    @bugs = current_user.bugs
+                        .order(created_at: :desc)
+                        .page(params[:page])
+                        .per(15)
   end
 
-  def import_page
-  end
-
-  def import
-    file = params[:file]
-    unless file && (file.content_type == "text/csv" || File.extname(file.original_filename) == ".csv")
-      redirect_to import_bugs_page_path, alert: "Please select a valid CSV file."
-      return
-    end
-
-    # Create a permanent tmp/uploads directory if it doesn't exist
-    uploads_dir = Rails.root.join("tmp", "uploads")
-    FileUtils.mkdir_p(uploads_dir) unless Dir.exist?(uploads_dir)
-
-    # Save uploaded file there
-    temp_file_path = uploads_dir.join("bug_import_#{SecureRandom.hex(8)}.csv")
-    File.open(temp_file_path, "wb") { |f| f.write(file.read) }
-
-    # Pass the file path to Sidekiq Job
-    BugImportJob.perform_later(temp_file_path.to_s, current_user.id)
-
-    redirect_to import_bugs_results_path, notice: "CSV import started. Check progress below."
-  end
-
-  def import_results
-    result_file = Dir.glob(
-      Rails.root.join("tmp", "import_bug_result_user_#{current_user.id}*.yml")
-    ).max_by { |f| File.mtime(f) }
-
-    @result =
-      if result_file && File.exist?(result_file)
-        YAML.load_file(result_file).deep_symbolize_keys
-      else
-        { success_count: 0, failures: [], failed_file: nil, processing: true }
-      end
-
-    respond_to do |format|
-      format.html
-      format.turbo_stream do
-        render turbo_stream: turbo_stream.replace(
-          "import_results",
-          partial: "shared/import_results",
-          locals: { result: @result }
-        )
-      end
-    end
-  end
-
-  def import_result_download
-    result_file = Dir.glob(
-      Rails.root.join("tmp", "import_bug_result_user_#{params[:id]}*.yml")
-    ).max_by { |f| File.mtime(f) }
-
-    if result_file && File.exist?(result_file)
-      result = YAML.load_file(result_file).deep_symbolize_keys
-
-      if result[:failed_file] && File.exist?(result[:failed_file])
-        send_file result[:failed_file],
-                  type: "text/csv",
-                  filename: "failed_bugs_user_#{params[:id]}.csv",
-                  disposition: "attachment"
-      else
-        redirect_to import_bugs_results_path, alert: "No failed rows CSV found."
-      end
-    else
-      redirect_to import_bugs_results_path, alert: "No import result file found."
-    end
-  end
-
-  def export
-    send_data Bug.to_csv, filename: "bugs-#{Date.today}.csv"
-  end
 
   def project_bugs
     @project = Project.find(params[:project_id])
 
-    unless can_manage_project?(@project)
-      redirect_to projects_path, alert: "You are not authorized to view bugs for this project."
-      return
-    end
+    authorize! :view_bugs, @project
 
     @bugs = @project.bugs
-                    .includes(:users)
                     .order(created_at: :desc)
                     .page(params[:page])
                     .per(20)
   end
 
-  private
+  def import_page
+    return unless params[:import_file]
 
-  def set_bug
-    @bug = Bug.find(params[:id])
+    file_path = Rails.root.join("tmp", params[:import_file])
+    return unless File.exist?(file_path)
+
+    @success_count, @failure_count =
+      read_import_counts(file_path)
+
+    @error_file = params[:import_file]
   end
+
+  def import
+    uploaded_file = params[:file]
+
+    if uploaded_file.nil? || File.extname(uploaded_file.original_filename) != ".csv"
+      redirect_to import_bugs_page_path, alert: "Please upload a valid CSV file."
+      return
+    end
+
+    input_path = Rails.root.join(
+      "tmp",
+      "bugs_import_#{Time.now.to_i}.csv"
+    )
+
+    FileUtils.cp(uploaded_file.path, input_path)
+
+    error_filename = "bug_import_errors_#{Time.now.to_i}.csv"
+
+    BugImportJob.perform_async(
+      current_user.id,
+      input_path.to_s,
+      error_filename
+    )
+
+    redirect_to import_bugs_page_path(
+      import_file: error_filename
+    ), notice: "Import started…"
+  end
+
+  def download_import_errors
+    filename = params[:file]
+    file_path = Rails.root.join("tmp", filename)
+
+    if filename.present? && File.exist?(file_path)
+      send_file file_path,
+                filename: filename,
+                type: "text/csv",
+                disposition: "attachment"
+    else
+      redirect_to import_bugs_page_path, alert: "Error file not found"
+    end
+  end
+
+  def export
+    BugExportJob.perform_async(current_user.id)
+
+    redirect_to bugs_path, notice: "Bugs export started. Refresh page to download when ready"
+  end
+
+  def export_download
+    file_path = Rails.root.join("tmp", "bugs_export_#{Date.today.strftime('%Y%m%d')}.csv")
+
+    unless file_path && File.exist?(file_path)
+      redirect_to bugs_path, alert: "Export not ready yet."
+      return
+    end
+
+    send_file file_path,
+              filename: File.basename(file_path),
+              type: "text/csv",
+              disposition: "attachment"
+  end
+
+  private
 
   # Instead of relying on params[:project_id], fetch project from bug_params[:project_id]
   def set_project_for_new_and_create
@@ -174,17 +189,19 @@ class BugsController < ApplicationController
     @project = Project.find(project_id)
   end
 
-  def authorize_bug!
-    unless can_manage_bug?(@bug)
-      redirect_to bug_path(@bug), alert: "You are not authorized to perform this action."
-    end
-  end
+  def read_import_counts(file_path)
+    success = 0
+    failure = 0
 
-  def authorize_bug_creation!
-    allowed_users = @project.assigned_users.to_a + [ @project.manager ]
-    unless current_user && allowed_users.include?(current_user)
-      redirect_back(fallback_location: root_path, alert: "Not authorized to create bugs.")
+    File.foreach(file_path) do |line|
+      break unless line.start_with?("#")
+
+      key, value = line.delete("#").strip.split(",")
+      success  = value.to_i if key == "success_count"
+      failure  = value.to_i if key == "failure_count"
     end
+
+    [ success, failure ]
   end
 
   def bug_params

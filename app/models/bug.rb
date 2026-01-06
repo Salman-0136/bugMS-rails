@@ -1,19 +1,15 @@
-require "csv"
-
 class Bug < ApplicationRecord
   has_many :bug_assignments, dependent: :destroy
   has_many :users, through: :bug_assignments
 
-  has_one_attached :csv_file
-
-  belongs_to :project
+  belongs_to :project, counter_cache: true
 
   has_many :comments, dependent: :destroy
 
-  enum priority: { low: 0, medium: 1, high: 2 }
-  enum status: { open: 0, closed: 1, reopened: 2 }
-  enum severity: { minor: 0, major: 1, critical: 2 }
-  enum bug_type: { ui: 0, backend: 1, performance: 2, security: 3 }
+  enum priority: [ :low, :medium, :high ]
+  enum status: [ :open, :closed, :reopened ]
+  enum severity: [ :minor, :major, :critical ]
+  enum bug_type: [ :ui, :backend, :performance, :security ]
 
   validates :title, presence: true, length: { minimum: 6, maximum: 100 }, uniqueness: { message: "The title has already been set for another bug" }
   validates :description, presence: true, length: { minimum: 10 }
@@ -25,37 +21,6 @@ class Bug < ApplicationRecord
     self.priority ||= :low
     self.status ||= :open
     self.severity ||= :minor
-  end
-
-  def self.to_csv
-    attributes = %w[id title description due_date time_lapse priority severity status bug_type project manager project_assignees bug_assignees created_at updated_at]
-
-    CSV.generate(headers: true) do |csv|
-      csv << attributes
-
-      Bug.includes(
-        :users,
-        project: [ :manager, :assigned_users ]
-      ).find_each(batch_size: 1000) do |bug|
-        csv << [
-          bug.id,
-          bug.title,
-          bug.description,
-          bug.due_date,
-          bug.time_lapse,
-          bug.priority,
-          bug.severity,
-          bug.status,
-          bug.bug_type,
-          bug.project&.name,
-          bug.project&.manager&.name,
-          bug.project&.assigned_users&.map(&:name).join(", "),
-          bug.users.map(&:name).join(", "),
-          bug.created_at,
-          bug.updated_at
-        ]
-      end
-    end
   end
 
   def close!(completed_at = Time.current)

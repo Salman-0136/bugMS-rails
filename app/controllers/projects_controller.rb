@@ -1,27 +1,23 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: [ :show, :edit, :update, :destroy ]
-  before_action :require_login
-  before_action :authorize_project!, only: [ :edit, :update ]
-  before_action :delete_project_authorization!, only: [ :destroy ]
+  before_action :authenticate_user!
+  load_and_authorize_resource
+
+  PER_PAGE = 6
 
   def index
-    @projects = Project.all.includes(:manager, :bugs, :assigned_users)
+    @projects = Project.all.includes(:manager, :assigned_users)
 
-    # Search by project name or manager
-    if params[:search].present?
-      @projects = @projects.where("name ILIKE ?", "%#{params[:search]}%")
-    end
+    # Search
+    @projects = @projects.where("name ILIKE ?", "%#{params[:search]}%") if params[:search].present?
+    @projects = @projects.where(manager_id: params[:manager_id]) if params[:manager_id].present?
 
-    if params[:manager_id].present?
-      @projects = @projects.where(manager_id: params[:manager_id])
-    end
-
-    @projects = @projects.order(created_at: :desc)
+    @projects = @projects.order(created_at: :desc).page(params[:page]).per(PER_PAGE)
   end
 
   def show
-    @project = Project.find(params[:id])
-    if can_manage_project?(@project)
+    # Load bugs only if user can manage project
+    if can?(:manage, @project)
       @bugs = @project.bugs.order(created_at: :desc)
       @bugs = @bugs.where(priority: params[:priority]) if params[:priority].present?
       @bugs = @bugs.where(status: params[:status]) if params[:status].present?
@@ -66,61 +62,108 @@ class ProjectsController < ApplicationController
   end
 
   def my_projects
-    @projects = current_user.projects.order(created_at: :desc) || current_user.where(projects.manager_id = :user_id)
-  end
-
-  def authorize_project!
-    unless can_manage_project?(@project)
-      redirect_to projects_path, alert: "You are not authorized to perform this action."
-    end
-  end
-
-  def delete_project_authorization!
-    unless delete_project?(@project)
-      redirect_back(fallback_location: root_path, alert: "You are not authorized, only manager can delete the project.")
-    end
+    @projects = Project
+                  .left_joins(:assigned_users)
+                  .where("projects.manager_id = :user_id OR users.id = :user_id", user_id: current_user.id)
+                  .order(created_at: :desc)
+                  .distinct
+                  .page(params[:page])
+                  .per(PER_PAGE)
   end
 
   def import_page
+    return unless params[:import_file]
+
+    file_path = Rails.root.join("tmp", params[:import_file])
+    return unless File.exist?(file_path)
+
+    @success_count, @failure_count =
+      read_import_counts(file_path)
+
+    @error_file = params[:import_file]
   end
 
   def import
-    file = params[:file]
-    if file.nil?
-      redirect_to import_projects_page_path, alert: "Please select a CSV file."
-      return
-    end
-    unless file.content_type == "text/csv" || File.extname(file.original_filename) == ".csv"
-      redirect_to import_projects_page_path, alert: "Inavlid file type. Please select a CSV file only."
+    uploaded_file = params[:file]
+
+    if uploaded_file.nil? || File.extname(uploaded_file.original_filename) != ".csv"
+      redirect_to import_projects_page_path, alert: "Please upload a valid CSV file."
       return
     end
 
-    temp_file_path = Rails.root.join("tmp", "project_import_#{Time.now.to_i}.csv")
-    File.open(temp_file_path, "wb") { |f| f.write(file.read) }
+    input_path = Rails.root.join(
+      "tmp",
+      "projects_import_#{Time.now.to_i}.csv"
+    )
 
-    ProjectImportJob.perform_later(temp_file_path.to_s, current_user.id)
+    FileUtils.cp(uploaded_file.path, input_path)
 
-    redirect_to import_projects_results_path, notice: "Here are the results of your imports file."
+    error_filename = "project_import_errors_#{Time.now.to_i}.csv"
+
+    ProjectImportJob.perform_async(
+      current_user.id,
+      input_path.to_s,
+      error_filename
+    )
+
+    redirect_to import_projects_page_path(
+      import_file: error_filename
+    ), notice: "Import started…"
   end
 
-  def import_results
-    result_file_path = Rails.root.join("tmp", "import_project_result_user_#{current_user.id}.yml")
-    if File.exist?(result_file_path)
-      @result = YAML.load_file(result_file_path) || { success_count: 0, failures: [] }
+  def download_import_errors
+    filename = params[:file]
+    file_path = Rails.root.join("tmp", filename)
+
+    if filename.present? && File.exist?(file_path)
+      send_file file_path,
+                filename: filename,
+                type: "text/csv",
+                disposition: "attachment"
     else
-      @result = { success_count: 0, failures: [] }
-      flash.now[:notice] = "The import is still processing. Please refresh this page in a few seconds."
+      redirect_to import_projects_page_path, alert: "Error file not found"
     end
   end
 
   def export
-    send_data Project.to_csv, filename: "projects-#{Date.today}.csv"
+    ProjectExportJob.perform_async(current_user.id)
+
+    redirect_to projects_path, notice: "Projects export started. Refresh page to download when ready"
+  end
+
+  def export_download
+    file_path = Rails.root.join("tmp", "projects_export_#{Date.today.strftime('%Y%m%d')}.csv")
+
+    unless file_path && File.exist?(file_path)
+      redirect_to projects_path, alert: "Export not ready yet."
+      return
+    end
+
+    send_file file_path,
+              filename: File.basename(file_path),
+              type: "text/csv",
+              disposition: "attachment"
   end
 
   private
 
   def set_project
     @project = Project.find(params[:id])
+  end
+
+  def read_import_counts(file_path)
+    success = 0
+    failure = 0
+
+    File.foreach(file_path) do |line|
+      break unless line.start_with?("#")
+
+      key, value = line.delete("#").strip.split(",")
+      success  = value.to_i if key == "success_count"
+      failure  = value.to_i if key == "failure_count"
+    end
+
+    [ success, failure ]
   end
 
   def project_params

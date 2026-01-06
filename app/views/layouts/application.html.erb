@@ -8,34 +8,22 @@
 
   <%= csrf_meta_tags %>
   <%= csp_meta_tag %>
+  <%= favicon_link_tag "bugms.png" %>
+
   <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
   <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-  <%= javascript_importmap_tags %>
-  <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true, type: "module"%>
-
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Load ESBuild JavaScript bundle -->
+  <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>
 </head>
 
 <body class="bg-gray-50 font-sans">
-
-  <!-- Navbar -->
   <%= render "layouts/nav" %>
-
-  <!-- Main content -->
   <main class="container mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-    <!-- Flash messages -->
     <%= render "shared/flash" %>
-
-    <!-- Optional search/filter -->
-    <% if logged_in? && !current_page?(login_path) && !current_page?(signup_path) && !current_page?(user_path(current_user)) %>
-    <%= render "shared/search_filter", users_for_filter: User.where.not(is_admin: true) %>
-    <% end %>
-
-    <!-- Page content -->
     <%= yield %>
   </main>
-
 </body>
-
 </html>

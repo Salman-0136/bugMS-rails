@@ -76,7 +76,7 @@
 
     <!-- Pagination -->
     <div class="mt-10 flex justify-center">
-      <%= paginate @bugs %>
+      <%= render "kaminari/paginator", collection: @bugs %>
     </div>
 
   <% else %>

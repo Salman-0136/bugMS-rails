@@ -4,80 +4,78 @@
   <% @projects.each do |project| %>
     <div class="bg-white shadow-lg rounded-2xl p-6 hover:shadow-xl transition-shadow">
 
-      <!-- ✅ Project Title -->
+      <!-- Project Title -->
       <h2 class="text-xl font-semibold text-gray-800 mb-4">
         <%= project.name %>
       </h2>
 
-      <!-- ✅ Project Description -->
+      <!-- Project Description -->
       <p class="text-sm text-gray-600 mb-4">
         <%= project.description.presence || "No description provided." %>
       </p>
 
-      <!-- ✅ Total Bugs Count -->
+      <!-- Total Bugs Count -->
       <p class="text-sm text-gray-500 mb-4">
-        Total Bugs: <span class="font-semibold"><%= project.bugs.count %></span>
+        Total Bugs: <span class="font-semibold"><%= project.bugs_count %></span>
       </p>
 
+      <!-- Bugs List -->
       <div class="mb-4">
         <span class="font-semibold text-gray-700">Bugs:</span>
-        <% if project.bugs.any? %>
-        <div class="flex flex-wrap gap-1 mt-1">
-          <% project.bugs.each do |bug| %>
-          <% status_class =
-                  case bug.status
-                  when "open" then "bg-red-100 text-red-700"
-                  when "in_progress" then "bg-yellow-100 text-yellow-700"
-                  when "closed" then "bg-green-100 text-green-700"
-                  end
-                %>
+        <% bug_count = project.bugs_count %>
 
-          <span class="<%= status_class %> text-xs font-semibold px-2 py-1 rounded-full">
-            <%= bug.title %> (<%= bug.status.humanize %>)
-          </span>
-          <% end %>
-        </div>
+        <% if bug_count == 0 %>
+          <span class="italic text-gray-400">No bugs</span>
+
         <% else %>
-        <span class="italic text-gray-400">No bugs</span>
+          <div class="mt-2">
+            <p class="text-sm text-gray-600 mb-2">
+              <%= bug_count %> bugs found
+            </p>
+            <%= link_to "View All Bugs",
+                  project_bugs_path(project.id),
+                  class: "inline-block bg-purple-600 hover:bg-purple-700 text-white text-sm px-4 py-2 rounded-lg shadow transition" %>
+          </div>
         <% end %>
       </div>
 
-      <!-- ✅ Created Date -->
+      <!-- Created Date -->
       <p class="text-gray-400 text-xs mb-4">
         Created on: <%= project.created_at.strftime("%b %d, %Y") %>
       </p>
 
-      <!-- ✅ Actions -->
+      <!-- Actions -->
       <div class="flex flex-wrap gap-2 mt-4">
-
-        <!-- ✅ View Project -->
         <%= link_to "View",
-            project_path(project),
-            class: "bg-blue-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-blue-700 transition" %>
+              project_path(project),
+              class: "bg-blue-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-blue-700 transition" %>
 
         <%= link_to "Edit",
-            edit_project_path(project),
-            class: "bg-yellow-500 text-white px-4 py-1 rounded-lg text-sm hover:bg-yellow-700 transition" %>
+              edit_project_path(project),
+              class: "bg-yellow-500 text-white px-4 py-1 rounded-lg text-sm hover:bg-yellow-700 transition" %>
 
-        <% if delete_project?(project) %>
+        <% if can? :destroy, project %>
           <%= button_to "Delete",
-            project_path(project),
-            method: :delete,
-            form: { data: { turbo_confirm: "⚠️ Are you sure? This will delete the project and all its bugs!" } },
-            class: "bg-red-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-red-700 transition" %>
+                project_path(project),
+                method: :delete,
+                form: { data: { turbo_confirm: "⚠️ Are you sure? This will delete the project and all its bugs!" } },
+                class: "bg-red-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-red-700 transition" %>
         <% end %>
 
-        <!-- ✅ Create Bug -->
         <%= link_to "Create Bug",
-            new_bug_path(project_id: project.id),
-            class: "bg-green-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-green-700 transition" %>
-
+              new_bug_path(project_id: project.id),
+              class: "bg-green-600 text-white px-4 py-1 rounded-lg text-sm hover:bg-green-700 transition" %>
       </div>
+
     </div>
   <% end %>
 </div>
 
-<!-- ✅ Empty State -->
+<div class="mt-6 mb-5">
+  <%= render "kaminari/paginator", collection: @projects %>
+</div>
+
+<!-- Empty State -->
 <% if @projects.empty? %>
   <p class="text-gray-500 text-center mt-12">
     You have no projects yet.

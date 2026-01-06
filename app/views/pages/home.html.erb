@@ -1,6 +1,6 @@
 <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
 
-  <% if logged_in? %>
+  <% if user_signed_in? %>
 
   <!-- ✅ Overview Cards -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
@@ -48,7 +48,7 @@
         </thead>
 
         <tbody class="bg-white divide-y divide-gray-200">
-          <% Bug.order(created_at: :desc).limit(5).each do |bug| %>
+          <% @bugs.each do |bug| %>
           <tr class="hover:bg-gray-50 transition">
 
             <!-- ✅ Title -->
